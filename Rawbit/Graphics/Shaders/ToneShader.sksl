@@ -1,0 +1,166 @@
+﻿uniform shader inputImage;
+uniform float exposure; 
+uniform float shadows; 
+uniform float highlights;
+uniform float curvePoints[16];
+uniform float curvePointCount;
+
+// Helpers
+// -----
+float getLuma(vec3 color) {
+    return dot(color, vec3(0.2126, 0.7152, 0.0722));
+}
+
+// A simple ACES-style tone mapper to recover high-range data
+vec3 aces(vec3 x) {
+    const float a = 2.51;
+    const float b = 0.03;
+    const float c = 2.43;
+    const float d = 0.59;
+    const float e = 0.14;
+    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
+}
+// -----
+// End helpers
+
+// Slider functions
+// -----
+
+vec3 applyExposure(vec3 color, float ev) {
+    return color * pow(2.0, ev);
+}
+
+vec3 applyShadows(vec3 color, float amount) {
+    float luma = getLuma(color);
+    float mask = smoothstep(0.5, 0.0, luma);
+    return color * pow(2.0, amount * mask);
+}
+
+vec3 applyHighlights(vec3 color, float amount) {
+    float luma = getLuma(color);
+    float mask = smoothstep(0.6, 1.0, luma);
+
+    float exposure = pow(2.0, amount * mask);
+
+    // preserve color ratios and avoid blowing up saturation
+    float newLuma = luma * exposure;
+    return color * (newLuma / max(luma, 1e-5));
+}
+// -----
+// End sliders functions
+
+// Hermite interpolation used to smoothly blend between curve points (GPU side).
+// Must stay in sync with CurveEditor.cs for WYSIWYG preview.
+float interpolateCubicHermite(float x, vec2 p1, vec2 p2, float m1, float m2) {
+    float dx = p2.x - p1.x;
+    if (dx <= 0.0) {
+        return p1.y;
+    }
+    float t = (x - p1.x) / dx;
+    float t2 = t * t;
+    float t3 = t2 * t;
+    float h00 = 2.0 * t3 - 3.0 * t2 + 1.0;
+    float h10 = t3 - 2.0 * t2 + t;
+    float h01 = -2.0 * t3 + 3.0 * t2;
+    float h11 = t3 - t2;
+    return h00 * p1.y + h10 * m1 * dx + h01 * p2.y + h11 * m2 * dx;
+}
+
+// Fetch a curve control point by index. Endpoints are implicit:
+// idx <= 0 -> (0,0), idx >= count+1 -> (1,1).
+vec2 getCurvePoint(int idx, int count) {
+    if (idx <= 0) {
+        return vec2(0.0, 0.0);
+    }
+
+    int lastIndex = count + 1;
+    if (idx >= lastIndex) {
+        return vec2(1.0, 1.0);
+    }
+
+    int ci = idx - 1;
+    if (ci == 0) return vec2(clamp(curvePoints[0], 0.001, 0.999), clamp(curvePoints[1], 0.0, 1.0));
+    if (ci == 1) return vec2(clamp(curvePoints[2], 0.001, 0.999), clamp(curvePoints[3], 0.0, 1.0));
+    if (ci == 2) return vec2(clamp(curvePoints[4], 0.001, 0.999), clamp(curvePoints[5], 0.0, 1.0));
+    if (ci == 3) return vec2(clamp(curvePoints[6], 0.001, 0.999), clamp(curvePoints[7], 0.0, 1.0));
+    if (ci == 4) return vec2(clamp(curvePoints[8], 0.001, 0.999), clamp(curvePoints[9], 0.0, 1.0));
+    if (ci == 5) return vec2(clamp(curvePoints[10], 0.001, 0.999), clamp(curvePoints[11], 0.0, 1.0));
+    if (ci == 6) return vec2(clamp(curvePoints[12], 0.001, 0.999), clamp(curvePoints[13], 0.0, 1.0));
+    if (ci == 7) return vec2(clamp(curvePoints[14], 0.001, 0.999), clamp(curvePoints[15], 0.0, 1.0));
+    return vec2(1.0, 1.0);
+}
+
+// Apply the point curve to a scalar x in [0,1], using monotonic Hermite
+// interpolation to avoid overshoot/inversion. Mirrors CurveEditor.cs math.
+float applyPointCurve1(float x) {
+    const int MAX_POINTS = 8;
+    int count = int(curvePointCount + 0.5);
+    if (count < 0) count = 0;
+    if (count > MAX_POINTS) count = MAX_POINTS;
+    int total = count + 2;
+    int lastIndex = count + 1;
+    
+    if (x <= 0.0) return 0.0;
+    if (x >= 1.0) return 1.0;
+
+    for (int i = 0; i < 9; i++) {
+        if (i >= total - 1) break;
+        vec2 p1 = getCurvePoint(i, count);
+        vec2 p2 = getCurvePoint(i + 1, count);
+        if (x > p2.x) continue;
+
+        vec2 p0 = getCurvePoint(i - 1, count);
+        vec2 p3 = getCurvePoint(i + 2, count);
+
+        float deltaBefore = (p1.y - p0.y) / max(0.001, p1.x - p0.x);
+        float deltaCurrent = (p2.y - p1.y) / max(0.001, p2.x - p1.x);
+        float deltaAfter = (p3.y - p2.y) / max(0.001, p3.x - p2.x);
+
+        float tangentP1 = (i == 0) ? deltaCurrent : ((deltaBefore * deltaCurrent <= 0.0) ? 0.0 : (deltaBefore + deltaCurrent) * 0.5);
+        float tangentP2 = (i + 1 == lastIndex) ? deltaCurrent : ((deltaCurrent * deltaAfter <= 0.0) ? 0.0 : (deltaCurrent + deltaAfter) * 0.5);
+
+        if (deltaCurrent != 0.0) {
+            float alpha = tangentP1 / deltaCurrent;
+            float beta = tangentP2 / deltaCurrent;
+            if (alpha * alpha + beta * beta > 9.0) {
+                float tau = 3.0 / sqrt(alpha * alpha + beta * beta);
+                tangentP1 = tangentP1 * tau;
+                tangentP2 = tangentP2 * tau;
+            }
+        }
+
+        return clamp(interpolateCubicHermite(x, p1, p2, tangentP1, tangentP2), 0.0, 1.0);
+    }
+
+    return 1.0;
+}
+
+vec3 applyPointCurve(vec3 color) {
+    float luma = getLuma(color);
+    float newLuma = applyPointCurve1(luma);
+    return color * (newLuma / max(luma, 1e-5));
+}
+
+
+
+half4 main(float2 fragCoord) {
+    vec4 rawColor = inputImage.eval(fragCoord);
+    vec3 rgb = rawColor.rgb;
+
+    // Apply sliders
+    rgb = applyExposure(rgb, exposure);
+    rgb = applyShadows(rgb, shadows);
+    rgb = applyHighlights(rgb, highlights);
+    
+    // Tone Mapping: This "squeezes" HDR data back into viewable range
+    // This is how you see detail in clouds that would otherwise be lost
+    rgb = aces(rgb);
+
+    // Gamma to display-referred space (curve feels more LR-like here)
+    rgb = pow(max(rgb, 0.0), vec3(1.0 / 2.2));
+
+    // Point curve (luma-only, after gamma)
+    rgb = clamp(applyPointCurve(rgb), 0.0, 1.0);
+
+    return half4(rgb, rawColor.a);
+}

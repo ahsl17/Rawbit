@@ -1,0 +1,28 @@
+<Window
+    Height="800"
+    Title="Rawbit"
+    Width="1200"
+    WindowStartupLocation="CenterScreen"
+    x:Class="Rawbit.UI.Views.MainWindow"
+    x:DataType="viewModels:MainWindowViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:viewModels="clr-namespace:Rawbit.UI.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open..." />
+                <Separator />
+                <MenuItem Header="_Exit" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="Copy" />
+                <MenuItem Header="Paste" />
+            </MenuItem>
+        </Menu>
+        <TextBlock />
+
+        <ContentControl Content="{Binding Content}" />
+    </DockPanel>
+</Window>

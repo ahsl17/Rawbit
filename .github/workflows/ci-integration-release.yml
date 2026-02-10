@@ -1,0 +1,55 @@
+name: Integration Tests and Release Builds
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  integration_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore Rawbit.IntegrationTests/Rawbit.IntegrationTests.csproj
+
+      - name: Integration Tests
+        run: dotnet test Rawbit.IntegrationTests/Rawbit.IntegrationTests.csproj -c Release --no-restore
+
+  release_builds:
+    needs: integration_tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            artifact: Rawbit-win-x64
+          - os: ubuntu-latest
+            rid: linux-x64
+            artifact: Rawbit-linux-x64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Publish
+        run: dotnet publish Rawbit/Rawbit.csproj -c Release -r ${{ matrix.rid }} --self-contained false -o out/${{ matrix.rid }}
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: out/${{ matrix.rid }}

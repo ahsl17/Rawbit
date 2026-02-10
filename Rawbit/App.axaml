@@ -1,0 +1,173 @@
+<Application
+    x:Class="Rawbit.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:viewModels="clr-namespace:Rawbit.UI.ViewModels"
+    xmlns:views1="clr-namespace:Rawbit.UI.Views"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Application.Resources>
+        <SolidColorBrush Color="#171717" x:Key="BrushBackground" />
+        <SolidColorBrush Color="#0f0f0f" x:Key="BrushCanvas" />
+        <SolidColorBrush Color="#232323" x:Key="BrushPanel" />
+        <SolidColorBrush Color="#363636" x:Key="BrushBorder" />
+        <SolidColorBrush Color="#d6d6d6" x:Key="BrushTextPrimary" />
+        <SolidColorBrush Color="#8a8a8a" x:Key="BrushTextMuted" />
+        <SolidColorBrush Color="#a8a8a8" x:Key="BrushAccent" />
+        <SolidColorBrush Color="#8c8c8c" x:Key="BrushAccentBorder" />
+        <SolidColorBrush Color="#f29a2e" x:Key="BrushAccentActive" />
+        <SolidColorBrush Color="#f29a2e" x:Key="BrushAccentActiveBorder" />
+        <SolidColorBrush Color="#3c3c3c" x:Key="BrushTrack" />
+        <SolidColorBrush Color="#2a2a2a" x:Key="BrushButton" />
+        <SolidColorBrush Color="#323232" x:Key="BrushButtonHover" />
+        <Color x:Key="SystemAccentColor">#F29A2E</Color>
+        <Color x:Key="SystemAccentColorLight1">#F6B35B</Color>
+        <Color x:Key="SystemAccentColorLight2">#F8C77E</Color>
+        <Color x:Key="SystemAccentColorLight3">#FBE1B1</Color>
+        <Color x:Key="SystemAccentColorDark1">#D9811E</Color>
+        <Color x:Key="SystemAccentColorDark2">#B96B17</Color>
+        <Color x:Key="SystemAccentColorDark3">#8F520F</Color>
+        <Color x:Key="AccentColor">#F29A2E</Color>
+    </Application.Resources>
+    <Application.Styles>
+        <FluentTheme />
+        <Style Selector="Window">
+            <Setter Property="Background" Value="{DynamicResource BrushBackground}" />
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}" />
+        </Style>
+        <Style Selector="TextBlock.muted">
+            <Setter Property="Foreground" Value="{DynamicResource BrushTextMuted}" />
+        </Style>
+        <Style Selector="TextBlock.section">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="LetterSpacing" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource BrushTextMuted}" />
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="{DynamicResource BrushButton}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BrushBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Foreground" Value="{DynamicResource BrushTextPrimary}" />
+            <Setter Property="Padding" Value="10,6" />
+        </Style>
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="{DynamicResource BrushButtonHover}" />
+        </Style>
+        <Style Selector="Button:pointerover /template/ ContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColorDark1}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorDark3}" />
+
+        </Style>
+        <Style Selector="Separator">
+            <Setter Property="Background" Value="{DynamicResource BrushBorder}" />
+        </Style>
+        <Style Selector="ProgressBar">
+            <Setter Property="Foreground" Value="{DynamicResource BrushAccent}" />
+            <Setter Property="Background" Value="{DynamicResource BrushTrack}" />
+            <Setter Property="Height" Value="2" />
+        </Style>
+        <Style Selector="Slider">
+            <Setter Property="Height" Value="18" />
+            <Setter Property="MinHeight" Value="18" />
+            <Setter Property="Margin" Value="0,6,0,0" />
+            <Setter Property="Background" Value="{DynamicResource BrushTrack}" />
+            <Setter Property="Foreground" Value="{DynamicResource BrushAccent}" />
+        </Style>
+        <Style Selector="Slider.thin">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid Margin="2,0">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="2"
+                            Height="3"
+                            VerticalAlignment="Center"
+                            x:Name="PART_TrackBar" />
+                        <Track
+                            IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
+                            Maximum="{TemplateBinding Maximum}"
+                            Minimum="{TemplateBinding Minimum}"
+                            Orientation="{TemplateBinding Orientation}"
+                            Value="{TemplateBinding Value}"
+                            x:Name="PART_Track">
+                            <Track.DecreaseButton>
+                                <RepeatButton
+                                    Background="Transparent"
+                                    IsTabStop="False"
+                                    VerticalAlignment="Center"
+                                    x:Name="PART_DecreaseButton">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate>
+                                            <Border
+                                                Background="{TemplateBinding Background}"
+                                                CornerRadius="2"
+                                                Height="3"
+                                                VerticalAlignment="Center" />
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.DecreaseButton>
+                            <Track.IncreaseButton>
+                                <RepeatButton
+                                    Background="Transparent"
+                                    IsTabStop="False"
+                                    VerticalAlignment="Center"
+                                    x:Name="PART_IncreaseButton">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate>
+                                            <Border
+                                                Background="{TemplateBinding Background}"
+                                                CornerRadius="2"
+                                                Height="3"
+                                                VerticalAlignment="Center" />
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.IncreaseButton>
+                            <Track.Thumb>
+                                <Thumb
+                                    Background="{TemplateBinding Foreground}"
+                                    BorderBrush="{DynamicResource BrushAccentBorder}"
+                                    BorderThickness="1"
+                                    Height="10"
+                                    Width="10">
+                                    <Thumb.Template>
+                                        <ControlTemplate>
+                                            <Border
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="5" />
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Slider.thin:pressed /template/ RepeatButton#PART_DecreaseButton">
+            <Setter Property="Background" Value="{DynamicResource BrushAccentActive}" />
+        </Style>
+        <Style Selector="Slider.thin:pressed /template/ Thumb">
+            <Setter Property="Background" Value="{DynamicResource BrushAccentActive}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorDark1}" />
+        </Style>
+        <Style Selector="Slider.thin /template/ Thumb:pointerover">
+            <Setter Property="Background" Value="{DynamicResource BrushAccentActive}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorDark1}" />
+        </Style>
+    </Application.Styles>
+    <Application.DataTemplates>
+        <DataTemplate DataType="{x:Type viewModels:ProjectSelectionViewModel}">
+            <views1:ProjectSelectionView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type viewModels:AdjustmentsViewModel}">
+            <views1:AdjustmentsView />
+        </DataTemplate>
+    </Application.DataTemplates>
+</Application>
