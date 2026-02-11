@@ -20,6 +20,8 @@ public class RawPreviewControl : Control
     private Models.RawImageContainer? _lastContainer;
     private bool _isZooming;
     private readonly DispatcherTimer _zoomDebounceTimer;
+    private bool _pointerPressed;
+    private Point _lastPointerPosition;
 
     public static readonly StyledProperty<AdjustmentsViewModel> ViewModelProperty =
         AvaloniaProperty.Register<RawPreviewControl, AdjustmentsViewModel>(nameof(ViewModel));
@@ -32,7 +34,10 @@ public class RawPreviewControl : Control
 
     public RawPreviewControl()
     {
-        PointerWheelChanged += OnPointerWheelChanged;
+        PointerWheelChanged += SetZoomLevel;
+        PointerReleased += StopMoving;
+        PointerPressed += MarkReadyForMoving;
+        PointerMoved += MoveInImage;
         
         // Timer to handle switching back from ProxyImage to High-Res after zooming stops
         _zoomDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(120) };
@@ -42,6 +47,37 @@ public class RawPreviewControl : Control
             _isZooming = false;
             InvalidateVisual();
         };
+    }
+
+    private void MoveInImage(object? sender, PointerEventArgs e)
+    {
+        if (_pointerPressed && ViewModel.ActiveImage != null)
+        {
+            if (!e.Properties.IsLeftButtonPressed)
+            {
+                _pointerPressed = false;
+                return;
+            }
+            var pointer = e.GetPosition(this);
+            var delta = pointer - _lastPointerPosition;
+            _lastPointerPosition = pointer;
+            _pan = ClampPan(Bounds.Size, ViewModel.ActiveImage, _zoom, _pan + delta);
+            e.Handled = true;
+            InvalidateVisual();
+        }
+    }
+
+    private void StopMoving(object? sender, PointerReleasedEventArgs e)
+    {
+        _pointerPressed = false;
+        e.Handled = true;
+    }
+
+    private void MarkReadyForMoving(object? sender, PointerPressedEventArgs e)
+    {
+        _pointerPressed = true;
+        _lastPointerPosition = e.GetPosition(this);
+        e.Handled = true;
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -65,7 +101,7 @@ public class RawPreviewControl : Control
         context.Custom(new RenderingEngineToViewConnector(ViewModel, _engine, Bounds, _zoom, _pan, imageOverride));
     }
 
-    private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    private void SetZoomLevel(object? sender, PointerWheelEventArgs e)
     {
         var image = ViewModel.ActiveImage;
         if (image == null || Bounds.Width <= 0 || Bounds.Height <= 0) return;
@@ -98,7 +134,7 @@ public class RawPreviewControl : Control
         _isZooming = true;
         _zoomDebounceTimer.Stop();
         _zoomDebounceTimer.Start();
-        
+
         e.Handled = true;
         InvalidateVisual();
     }
