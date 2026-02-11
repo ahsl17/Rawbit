@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using Rawbit.UI.ViewModels;
+using MainWindowViewModel = Rawbit.UI.Root.MainWindowViewModel;
 
 namespace Rawbit.UI.Views;
 

@@ -159,6 +159,9 @@ half4 main(float2 fragCoord) {
     // Gamma to display-referred space (curve feels more LR-like here)
     rgb = pow(max(rgb, 0.0), vec3(1.0 / 2.2));
 
+    // HSL adjustments (per color range)
+    rgb = applyHslAdjustments(rgb);
+
     // Point curve (luma-only, after gamma)
     rgb = clamp(applyPointCurve(rgb), 0.0, 1.0);
 

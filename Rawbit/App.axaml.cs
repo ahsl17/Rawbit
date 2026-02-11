@@ -8,7 +8,7 @@
     using Rawbit.Services;
     using Rawbit.Services.Interfaces;
     using MainWindow = Rawbit.UI.Views.MainWindow;
-    using MainWindowViewModel = Rawbit.UI.ViewModels.MainWindowViewModel;
+    using MainWindowViewModel = Rawbit.UI.Root.MainWindowViewModel;
 
     namespace Rawbit;
 

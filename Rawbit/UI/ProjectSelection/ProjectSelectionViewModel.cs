@@ -8,9 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Rawbit.Data.DbContext;
 using Rawbit.Helpers;
 using Rawbit.Services.Interfaces;
-using Rawbit.UI.ViewModels.Interfaces;
+using Rawbit.UI.Root.Interfaces;
 
-namespace Rawbit.UI.ViewModels;
+namespace Rawbit.UI.ProjectSelection;
 
 public partial class ProjectSelectionViewModel : INavigableViewModel
 {

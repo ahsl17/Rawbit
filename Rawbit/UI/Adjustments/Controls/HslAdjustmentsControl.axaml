@@ -1,0 +1,74 @@
+<UserControl
+    x:Class="Rawbit.UI.Adjustments.Controls.HslAdjustmentsControl"
+    x:DataType="viewModels1:HslAdjustmentsViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModels1="clr-namespace:Rawbit.UI.Adjustments.ViewModels">
+    <StackPanel Spacing="10">
+        <TextBlock
+            Classes="muted"
+            FontWeight="Bold"
+            Margin="0,6,0,2"
+            Text="HSL" />
+        <ItemsControl ItemsSource="{Binding Adjustments}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Spacing="6" Margin="0,0,0,12">
+                        <TextBlock FontSize="12" FontWeight="SemiBold" Text="{Binding Name}" />
+
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,-4">
+                                <TextBlock FontSize="12" Text="Hue" />
+                                <TextBlock
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource BrushAccent}"
+                                    HorizontalAlignment="Right"
+                                    Text="{Binding Hue, StringFormat={}{0:F0}}" />
+                            </DockPanel>
+                            <Slider
+                                Classes="thin"
+                                Maximum="100"
+                                Minimum="-100"
+                                Value="{Binding Hue}" />
+                        </StackPanel>
+
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,-4">
+                                <TextBlock FontSize="12" Text="Saturation" />
+                                <TextBlock
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource BrushAccent}"
+                                    HorizontalAlignment="Right"
+                                    Text="{Binding Saturation, StringFormat={}{0:F0}}" />
+                            </DockPanel>
+                            <Slider
+                                Classes="thin"
+                                Maximum="100"
+                                Minimum="-100"
+                                Value="{Binding Saturation}" />
+                        </StackPanel>
+
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,-4">
+                                <TextBlock FontSize="12" Text="Luminance" />
+                                <TextBlock
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource BrushAccent}"
+                                    HorizontalAlignment="Right"
+                                    Text="{Binding Luminance, StringFormat={}{0:F0}}" />
+                            </DockPanel>
+                            <Slider
+                                Classes="thin"
+                                Maximum="100"
+                                Minimum="-100"
+                                Value="{Binding Luminance}" />
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>

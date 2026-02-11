@@ -46,6 +46,7 @@ public class RawLoaderService : IRawLoaderService
             cfg.UseCameraWb = true;
             cfg.NoAutoBright = true; 
             cfg.AutoScale = true;
+            cfg.HighlightMode = 1;
         
             cfg.UserQual = DemosaicAlgorithm.AdaptiveHomogeneityDirected; 
 

@@ -1,4 +1,4 @@
-﻿namespace Rawbit.UI.ViewModels.Interfaces;
+﻿namespace Rawbit.UI.Root.Interfaces;
 
 public interface INavigableViewModel
 {

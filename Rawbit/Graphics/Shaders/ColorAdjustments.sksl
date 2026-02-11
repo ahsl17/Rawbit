@@ -1,0 +1,78 @@
+uniform float hslAdjustments[24];
+
+vec3 rgbToHsl(vec3 c) {
+    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+    
+    // Tri des composantes pour trouver Max et Min sans "if"
+    vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+    vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+
+    float d = q.x - min(q.w, q.y);
+    float e = 1.0e-10; // Epsilon pour éviter la division par zéro
+    
+    float h = abs(q.z + (q.w - q.y) / (6.0 * d + e));
+    float l = (q.x + min(q.w, q.y)) * 0.5;
+    float s = d / (1.0 - abs(2.0 * l - 1.0) + e);
+    
+    return vec3(h, s, l);
+}
+
+vec3 hslToRgb(vec3 hsl) {
+    vec3 rgb = clamp(abs(mod(hsl.x * 6.0 + vec3(0, 4, 2), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+    return hsl.z + hsl.y * (rgb - 0.5) * (1.0 - abs(2.0 * hsl.z - 1.0));
+}
+
+vec3 getHslAdjustment(int idx) {
+    if (idx == 0) return vec3(hslAdjustments[0], hslAdjustments[1], hslAdjustments[2]);
+    if (idx == 1) return vec3(hslAdjustments[3], hslAdjustments[4], hslAdjustments[5]);
+    if (idx == 2) return vec3(hslAdjustments[6], hslAdjustments[7], hslAdjustments[8]);
+    if (idx == 3) return vec3(hslAdjustments[9], hslAdjustments[10], hslAdjustments[11]);
+    if (idx == 4) return vec3(hslAdjustments[12], hslAdjustments[13], hslAdjustments[14]);
+    if (idx == 5) return vec3(hslAdjustments[15], hslAdjustments[16], hslAdjustments[17]);
+    if (idx == 6) return vec3(hslAdjustments[18], hslAdjustments[19], hslAdjustments[20]);
+    if (idx == 7) return vec3(hslAdjustments[21], hslAdjustments[22], hslAdjustments[23]);
+    return vec3(0.0);
+}
+
+float getHslCenter(int idx) {
+    if (idx == 0) return 0.0;    // Red
+    if (idx == 1) return 30.0;   // Orange
+    if (idx == 2) return 60.0;   // Yellow
+    if (idx == 3) return 120.0;  // Green
+    if (idx == 4) return 180.0;  // Aqua
+    if (idx == 5) return 240.0;  // Blue
+    if (idx == 6) return 270.0;  // Purple
+    if (idx == 7) return 300.0;  // Magenta
+    return 0.0;
+}
+
+float hueDistance(float a, float b) {
+    float d = abs(a - b);
+    return min(d, 360.0 - d);
+}
+
+vec3 applyHslAdjustments(vec3 rgb) {
+    vec3 hsl = rgbToHsl(rgb);
+    float hueDeg = hsl.x * 360.0;
+    float totalWeight = 0.0;
+    vec3 totalAdj = vec3(0.0);
+    const float width = 30.0;
+
+    for (int i = 0; i < 8; i++) {
+        float center = getHslCenter(i);
+        float d = hueDistance(hueDeg, center);
+        float w = smoothstep(width, 0.0, d);
+        vec3 adj = getHslAdjustment(i);
+        totalAdj += adj * w;
+        totalWeight += w;
+    }
+
+    if (totalWeight > 0.0) {
+        vec3 adj = totalAdj / totalWeight;
+        hsl.x = fract(hsl.x + (adj.x / 360.0) + 1.0);
+        hsl.y = clamp(hsl.y * (1.0 + adj.y * 0.01), 0.0, 1.0);
+        hsl.z = clamp(hsl.z + adj.z * 0.01, 0.0, 1.0);
+    }
+
+    return hslToRgb(hsl);
+}

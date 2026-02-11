@@ -48,14 +48,34 @@
 
     <ItemGroup>
       <None Remove="Graphics\Shaders\Shader.sksl" />
+      <EmbeddedResource Include="Graphics\Shaders\ColorAdjustments.sksl">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
       <EmbeddedResource Include="Graphics\Shaders\ToneShader.sksl">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
-      <AdditionalFiles Include="UI\Views\AdjustmentsView.axaml" />
       <AdditionalFiles Include="UI\Views\MainWindow.axaml" />
-      <AdditionalFiles Include="UI\Views\ProjectSelectionView.axaml" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="UI\Adjustments\Controls\HslAdjustmentsControl.axaml.cs">
+        <DependentUpon>HslAdjustmentsControl.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="UI\Adjustments\Controls\LightAdjustmentsControl.axaml.cs">
+        <DependentUpon>LightAdjustmentsControl.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="UI\Adjustments\AdjustmentsView.axaml.cs">
+        <DependentUpon>AdjustmentsView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="UI\ProjectSelection\ProjectSelectionView.axaml.cs">
+        <DependentUpon>ProjectSelectionView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 </Project>

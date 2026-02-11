@@ -12,6 +12,7 @@ public class RawRenderingEngine : IDisposable
     private float _lastHighlights = float.NaN;
     private int _lastCurvePointCount = -1;
     private int _lastCurvePointsHash;
+    private int _lastHslHash;
     private SKImage? _lastSource;
     private readonly SKPaint _paint = new();
 
@@ -23,27 +24,31 @@ public class RawRenderingEngine : IDisposable
         float highlights,
         float[] curvePoints,
         int curvePointCount,
+        float[] hslAdjustments,
         float zoom,
         SKPoint pan,
         SKRect destRect)
     {
         var curveHash = HashCurvePoints(curvePoints, curvePointCount);
+        var hslHash = HashFloatArray(hslAdjustments);
         // 1. Conditional rebuild: Only rebuild the shader if something actually changed (Performance!)
         if (_cachedShader == null || _lastSource != source ||
             Math.Abs(_lastExposure - exposure) > 0.001f ||
             Math.Abs(_lastShadows - shadows) > 0.001f ||
             Math.Abs(_lastHighlights - highlights) > 0.001f ||
             _lastCurvePointCount != curvePointCount ||
-            _lastCurvePointsHash != curveHash)
+            _lastCurvePointsHash != curveHash ||
+            _lastHslHash != hslHash)
         {
             _cachedShader?.Dispose();
-            _cachedShader = CreateShader(source, exposure, shadows, highlights, curvePoints, curvePointCount);
+            _cachedShader = CreateShader(source, exposure, shadows, highlights, curvePoints, curvePointCount, hslAdjustments);
             _lastSource = source;
             _lastExposure = exposure;
             _lastShadows = shadows;
             _lastHighlights = highlights;
             _lastCurvePointCount = curvePointCount;
             _lastCurvePointsHash = curveHash;
+            _lastHslHash = hslHash;
         }
 
         // 2. Clear and Draw
@@ -73,7 +78,8 @@ public class RawRenderingEngine : IDisposable
         float shadows,
         float highlights,
         float[] curvePoints,
-        int curvePointCount)
+        int curvePointCount,
+        float[] hslAdjustments)
     {
         using var imageShader = source.ToShader(SKShaderTileMode.Clamp,
             SKShaderTileMode.Clamp, new SKSamplingOptions(SKFilterMode.Linear));
@@ -84,7 +90,8 @@ public class RawRenderingEngine : IDisposable
             shadows,
             highlights,
             curvePoints,
-            curvePointCount);
+            curvePointCount,
+            hslAdjustments);
     }
 
     private static int HashCurvePoints(float[] points, int count)
@@ -94,6 +101,17 @@ public class RawRenderingEngine : IDisposable
             var hash = 17;
             var length = Math.Min(points.Length, count * 2);
             for (var i = 0; i < length; i++)
+                hash = hash * 31 + points[i].GetHashCode();
+            return hash;
+        }
+    }
+
+    private static int HashFloatArray(float[] points)
+    {
+        unchecked
+        {
+            var hash = 17;
+            for (var i = 0; i < points.Length; i++)
                 hash = hash * 31 + points[i].GetHashCode();
             return hash;
         }

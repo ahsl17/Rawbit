@@ -17,7 +17,8 @@ public static partial class ToneShader
 
     private static SKRuntimeEffect CompileEffect(string resourceName)
     {
-        var source = ReadShaderFromResource(resourceName);
+        var source = ReadShaderFromResource("ColorAdjustments.sksl") + Environment.NewLine +
+                     ReadShaderFromResource(resourceName);
 
         // Compile
         var effect = SKRuntimeEffect.CreateShader(source, out var errors);
@@ -48,7 +49,8 @@ public static partial class ToneShader
         float shadows,
         float highlights,
         float[] curvePoints,
-        int curvePointCount)
+        int curvePointCount,
+        float[] hslAdjustments)
     {
         // A Uniform is a constant value for each pixel forwarded from the CPU to the GPU
         var uniforms = new SKRuntimeEffectUniforms(ToneEffect)
@@ -57,7 +59,8 @@ public static partial class ToneShader
             { Uniforms.Shadows, shadows },
             { Uniforms.Highlights, highlights },
             { Uniforms.CurvePoints, curvePoints },
-            { Uniforms.CurvePointCount, (float)curvePointCount }
+            { Uniforms.CurvePointCount, (float)curvePointCount },
+            { Uniforms.HslAdjustments, hslAdjustments }
         };
 
         var children = new SKRuntimeEffectChildren(ToneEffect)

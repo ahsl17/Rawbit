@@ -6,9 +6,9 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Media;
-using Rawbit.UI.ViewModels;
+using Rawbit.UI.Adjustments.ViewModels;
 
-namespace Rawbit.UI.Views.Controls;
+namespace Rawbit.UI.Adjustments.Controls;
 
 public class CurveEditor : Control
 {
