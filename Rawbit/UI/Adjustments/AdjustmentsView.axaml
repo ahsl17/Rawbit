@@ -64,6 +64,7 @@
             </Border>
         </Grid>
         <ListBox
+            x:Name="ThumbnailsList"
             Background="{StaticResource BrushBackground}"
             Grid.Row="1"
             ItemsSource="{Binding FolderThumbnails}"

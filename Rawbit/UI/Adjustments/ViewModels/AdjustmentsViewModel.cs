@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -8,7 +7,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Rawbit.Models;
 using Rawbit.Services;
 using Rawbit.Services.Interfaces;
-using Rawbit.Data.Repositories.Interfaces;
 using Rawbit.UI.Root.Interfaces;
 using SkiaSharp;
 
@@ -20,7 +18,7 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
 
     // Cached shader state
     private readonly IRawLoaderService _rawLoaderService;
-    private readonly IImageRepository _imageRepository;
+    private readonly IAdjustmentsStore _adjustmentsStore;
     private RawImageContainer? _rawImageContainer;
     [ObservableProperty] private List<ThumnailWithPath> _folderThumbnails = [];
 
@@ -85,10 +83,10 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
         }
     }
     
-    public AdjustmentsViewModel(IRawLoaderService rawLoaderService, IImageRepository imageRepository)
+    public AdjustmentsViewModel(IRawLoaderService rawLoaderService, IAdjustmentsStore adjustmentsStore)
     {
         _rawLoaderService = rawLoaderService;
-        _imageRepository = imageRepository;
+        _adjustmentsStore = adjustmentsStore;
         LightAdjustments = new LightAdjustmentsViewModel();
         HslAdjustments = new HslAdjustmentsViewModel();
         ToneCurveAdjustment = new ToneCurveAdjustmentViewModel();
@@ -100,7 +98,11 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
 
     partial void OnSelectedImageChanged(ThumnailWithPath? value)
     {
-        if (value is null) return;
+        if (value is null)
+            return;
+        if (!ReferenceEquals(SelectedImage, value))
+            SelectedImage = value;
+
         _ = LoadAdjustmentsAsync(value.Path);
         _ = LoadImageAsync(value);
     }
@@ -109,11 +111,11 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
     {
         try
         {
-            var adjustments = await _imageRepository.GetAdjustmentsByPathAsync(imagePath).ConfigureAwait(false);
-            if (adjustments == null)
+            var state = await _adjustmentsStore.LoadAsync(imagePath).ConfigureAwait(false);
+            if (state == null)
                 return;
 
-            Dispatcher.UIThread.Post(() => ApplyAdjustments(adjustments));
+            Dispatcher.UIThread.Post(() => ApplyAdjustments(state));
         }
         catch
         {
@@ -227,7 +229,7 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
         }, token);
     }
 
-    private void ApplyAdjustments(Models.Adjustments adjustments)
+    private void ApplyAdjustments(AdjustmentsState adjustments)
     {
         _isApplyingAdjustments = true;
         try
@@ -238,13 +240,8 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
             LightAdjustments.TemperatureValue = adjustments.Temperature;
             LightAdjustments.TintValue = adjustments.Tint;
 
-            var hsl = JsonSerializer.Deserialize<float[]>(adjustments.HslAdjustmentsJson);
-            if (hsl != null)
-                HslAdjustments.ApplyPacked(hsl);
-
-            var curve = JsonSerializer.Deserialize<float[]>(adjustments.CurvePointsJson);
-            if (curve != null)
-                ToneCurveAdjustment.ApplyPacked(curve, adjustments.CurvePointCount);
+            HslAdjustments.ApplyPacked(adjustments.Hsl);
+            ToneCurveAdjustment.ApplyPacked(adjustments.CurvePoints, adjustments.CurvePointCount);
         }
         finally
         {
@@ -272,18 +269,16 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
         if (string.IsNullOrWhiteSpace(imagePath))
             return;
 
-        var adjustments = new Models.Adjustments
-        {
-            Exposure = (float)LightAdjustments.ExposureValue,
-            Shadows = (float)LightAdjustments.ShadowsValue,
-            Highlights = (float)LightAdjustments.HighlightsValue,
-            Temperature = (float)LightAdjustments.TemperatureValue,
-            Tint = (float)LightAdjustments.TintValue,
-            HslAdjustmentsJson = JsonSerializer.Serialize(HslAdjustments.AdjustmentsPacked),
-            CurvePointsJson = JsonSerializer.Serialize(ToneCurveAdjustment.CurvePointsPacked),
-            CurvePointCount = ToneCurveAdjustment.CurvePointCount
-        };
+        var state = new AdjustmentsState(
+            (float)LightAdjustments.ExposureValue,
+            (float)LightAdjustments.ShadowsValue,
+            (float)LightAdjustments.HighlightsValue,
+            (float)LightAdjustments.TemperatureValue,
+            (float)LightAdjustments.TintValue,
+            HslAdjustments.AdjustmentsPacked,
+            ToneCurveAdjustment.CurvePointsPacked,
+            ToneCurveAdjustment.CurvePointCount);
 
-        await _imageRepository.UpdateAdjustmentsByPathAsync(imagePath, adjustments).ConfigureAwait(false);
+        await _adjustmentsStore.SaveAsync(imagePath, state).ConfigureAwait(false);
     }
 }

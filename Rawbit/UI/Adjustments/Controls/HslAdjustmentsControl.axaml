@@ -35,7 +35,7 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <StackPanel Spacing="6" Margin="0,0,0,12">
+        <StackPanel Spacing="4" Margin="0,0,0,8">
             <StackPanel>
                 <DockPanel Margin="0,0,0,-4">
                     <TextBlock FontSize="12" Text="Hue" />
