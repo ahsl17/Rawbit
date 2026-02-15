@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 
-namespace Rawbit.UI.Views;
+namespace Rawbit.UI.ProjectSelection;
 
 public partial class ProjectSelectionView : UserControl
 {

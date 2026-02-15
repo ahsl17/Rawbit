@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Rawbit.Services.Interfaces;
-using MainWindowViewModel = Rawbit.UI.ViewModels.MainWindowViewModel;
+using MainWindowViewModel = Rawbit.UI.Root.MainWindowViewModel;
 
 namespace Rawbit.Services;
 

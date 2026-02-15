@@ -1,0 +1,90 @@
+<UserControl
+    x:Class="Rawbit.UI.Adjustments.AdjustmentsView"
+    x:DataType="viewModels1:AdjustmentsViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModels1="clr-namespace:Rawbit.UI.Adjustments.ViewModels"
+    xmlns:controls="clr-namespace:Rawbit.UI.Adjustments.Controls">
+    <Grid RowDefinitions="*, 110">
+        <Grid ColumnDefinitions="*, 300" Grid.Row="0">
+            <Grid Background="{StaticResource BrushCanvas}" Grid.Column="0">
+                <controls:RawPreviewControl
+                    ClipToBounds="True"
+                    HorizontalAlignment="Stretch"
+                    IsVisible="{Binding IsRawLoaded}"
+                    VerticalAlignment="Stretch"
+                    ViewModel="{Binding}" />
+                <Border
+                    Background="{StaticResource BrushPanel}"
+                    BorderBrush="{StaticResource BrushBorder}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    HorizontalAlignment="Center"
+                    IsVisible="{Binding IsBusy}"
+                    Padding="5"
+                    VerticalAlignment="Center">
+                    <ProgressBar
+                        Height="5"
+                        IsIndeterminate="True"
+                        IsVisible="{Binding IsBusy}"
+                        VerticalAlignment="Center"
+                        Width="240"
+                        ZIndex="10" />
+                </Border>
+            </Grid>
+            <Border
+                Background="{DynamicResource BrushPanel}"
+                BorderBrush="{DynamicResource BrushBorder}"
+                BorderThickness="0,0,1,0"
+                Grid.Column="1"
+                Padding="20">
+                <ScrollViewer
+                    HorizontalScrollBarVisibility="Disabled"
+                    Padding="0,0,20,0"
+                    VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="25">
+                        <TextBlock Classes="section" Text="IMAGE ADJUSTMENTS" />
+
+                        <controls:LightAdjustmentsControl DataContext="{Binding LightAdjustments}" />
+
+                        <StackPanel Spacing="10">
+                            <TextBlock
+                                Classes="muted"
+                                FontWeight="Bold"
+                                Margin="0,6,0,2"
+                                Text="TONE CURVE" />
+                            <controls:CurveEditor Height="250" Points="{Binding ToneCurveAdjustment.Points}" />
+                        </StackPanel>
+                        
+                        <Separator />
+
+                        <controls:HslAdjustmentsControl DataContext="{Binding HslAdjustments}" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+        <ListBox
+            Background="{StaticResource BrushBackground}"
+            Grid.Row="1"
+            ItemsSource="{Binding FolderThumbnails}"
+            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+            SelectedItem="{Binding SelectedImage}"
+            SelectionMode="Single">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Image
+                        Height="80"
+                        Source="{Binding Bitmap}"
+                        Width="100" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+    </Grid>
+
+</UserControl>

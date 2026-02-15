@@ -5,10 +5,10 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Rawbit.Graphics;
-using Rawbit.UI.ViewModels;
+using Rawbit.UI.Adjustments.ViewModels;
 using SkiaSharp;
 
-namespace Rawbit.UI.Views.Controls;
+namespace Rawbit.UI.Adjustments.Controls;
 
 public class RawPreviewControl : Control
 {

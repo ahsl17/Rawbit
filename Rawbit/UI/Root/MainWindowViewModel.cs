@@ -2,9 +2,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Rawbit.Services;
-using Rawbit.UI.ViewModels.Interfaces;
+using Rawbit.UI.Adjustments.ViewModels;
+using Rawbit.UI.ProjectSelection;
+using Rawbit.UI.Root.Interfaces;
 
-namespace Rawbit.UI.ViewModels;
+namespace Rawbit.UI.Root;
 
 public partial class MainWindowViewModel : ObservableObject
 {

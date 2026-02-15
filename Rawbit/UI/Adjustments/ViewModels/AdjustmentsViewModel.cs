@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -10,31 +7,24 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Rawbit.Models;
 using Rawbit.Services;
 using Rawbit.Services.Interfaces;
-using Rawbit.UI.ViewModels.Interfaces;
+using Rawbit.UI.Root.Interfaces;
 using SkiaSharp;
 
-namespace Rawbit.UI.ViewModels;
+namespace Rawbit.UI.Adjustments.ViewModels;
 
 public partial class AdjustmentsViewModel : ObservableObject, INavigableViewModel
 {
-    private const int MaxCurvePoints = 8;
-    private readonly object _syncLock = new();
+    private readonly Lock _syncLock = new();
 
     // Cached shader state
-    private IRawLoaderService _rawLoaderService;
+    private readonly IRawLoaderService _rawLoaderService;
     private RawImageContainer? _rawImageContainer;
-    [ObservableProperty] private List<ThumnailWithPath> _folderThumbnails = new();
+    [ObservableProperty] private List<ThumnailWithPath> _folderThumbnails = [];
 
     // UI state
-    [ObservableProperty] private double _exposureValue;
-    [ObservableProperty] private double _shadowsValue;
-    [ObservableProperty] private double _highlightsValue;
-    public ObservableCollection<CurvePoint> CurvePoints { get; } = new();
-    private readonly float[] _curvePointsPacked = new float[MaxCurvePoints * 2];
-    private int _curvePointCount;
-
-    public float[] CurvePointsPacked => _curvePointsPacked;
-    public int CurvePointCount => _curvePointCount;
+    public LightAdjustmentsViewModel LightAdjustments { get; }
+    public HslAdjustmentsViewModel HslAdjustments { get; }
+    public ToneCurveAdjustmentViewModel ToneCurveAdjustment { get; }
     
     
     [ObservableProperty] private bool _isBusy;
@@ -46,7 +36,7 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
 
     private CancellationTokenSource? _loadCts;
 
-    private SemaphoreSlim _loadGate = new(1, 1);
+    private readonly SemaphoreSlim _loadGate = new(1, 1);
     private int _loadRequestId = 0;
     private int _redrawQueued;
 
@@ -55,65 +45,52 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
     private bool _isUserAdjusting;
     private CancellationTokenSource? _adjustmentCts;
 
+    public SKImage? ActiveImage
+    {
+        get
+        {
+            lock (_syncLock)
+            {
+                return (_isUserAdjusting && _rawImageContainer?.Proxy != null)
+                    ? _rawImageContainer.Proxy
+                    : _rawImageContainer?.FullRes;
+            }
+        }
+    }
+
+    public RawImageContainer? CurrentContainer
+    {
+        get
+        {
+            lock (_syncLock)
+            {
+                return _rawImageContainer;
+            }
+        }
+    }
+
+    public SKImage? ProxyImage
+    {
+        get
+        {
+            lock (_syncLock)
+            {
+                return _rawImageContainer?.Proxy;
+            }
+        }
+    }
+    
     public AdjustmentsViewModel(IRawLoaderService rawLoaderService)
     {
         _rawLoaderService = rawLoaderService;
-
-        CurvePoints.CollectionChanged += OnCurvePointsChanged;
-        UpdateCurveCache();
+        LightAdjustments = new LightAdjustmentsViewModel();
+        HslAdjustments = new HslAdjustmentsViewModel();
+        ToneCurveAdjustment = new ToneCurveAdjustmentViewModel();
+        LightAdjustments.AdjustmentsChanged += AdjustAndRedraw;
+        HslAdjustments.AdjustmentsChanged += AdjustAndRedraw;
+        ToneCurveAdjustment.AdjustmentsChanged += AdjustAndRedraw;
     }
 
-    partial void OnExposureValueChanged(double value) => AdjustAndRedraw();
-    partial void OnShadowsValueChanged(double value) => AdjustAndRedraw();
-    partial void OnHighlightsValueChanged(double value) => AdjustAndRedraw();
-
-    private void OnCurvePointsChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        if (e.OldItems != null)
-        {
-            foreach (var item in e.OldItems)
-            {
-                if (item is CurvePoint point)
-                    point.PropertyChanged -= OnCurvePointPropertyChanged;
-            }
-        }
-
-        if (e.NewItems != null)
-        {
-            foreach (var item in e.NewItems)
-            {
-                if (item is CurvePoint point)
-                    point.PropertyChanged += OnCurvePointPropertyChanged;
-            }
-        }
-
-        UpdateCurveCache();
-        AdjustAndRedraw();
-    }
-
-    private void OnCurvePointPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        UpdateCurveCache();
-        AdjustAndRedraw();
-    }
-
-    private void UpdateCurveCache()
-    {
-        _curvePointCount = Math.Min(CurvePoints.Count, MaxCurvePoints);
-
-        var ordered = new List<CurvePoint>(CurvePoints);
-        ordered.Sort((a, b) => a.X.CompareTo(b.X));
-
-        for (int i = 0; i < _curvePointsPacked.Length; i++)
-            _curvePointsPacked[i] = 0f;
-
-        for (int i = 0; i < _curvePointCount; i++)
-        {
-            var p = ordered[i];
-            _curvePointsPacked[i * 2] = (float)p.X;
-            _curvePointsPacked[i * 2 + 1] = (float)p.Y;
-        }
-    }
 
     partial void OnSelectedImageChanged(ThumnailWithPath? value)
     {
@@ -222,40 +199,5 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
             _isUserAdjusting = false;
             Dispatcher.UIThread.Post(() => RequestRedraw?.Invoke());
         }, token);
-    }
-
-    public SKImage? ActiveImage
-    {
-        get
-        {
-            lock (_syncLock)
-            {
-                return (_isUserAdjusting && _rawImageContainer?.Proxy != null)
-                    ? _rawImageContainer.Proxy
-                    : _rawImageContainer?.FullRes;
-            }
-        }
-    }
-
-    public RawImageContainer? CurrentContainer
-    {
-        get
-        {
-            lock (_syncLock)
-            {
-                return _rawImageContainer;
-            }
-        }
-    }
-
-    public SKImage? ProxyImage
-    {
-        get
-        {
-            lock (_syncLock)
-            {
-                return _rawImageContainer?.Proxy;
-            }
-        }
     }
 }

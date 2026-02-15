@@ -4,10 +4,10 @@
     Width="1200"
     WindowStartupLocation="CenterScreen"
     x:Class="Rawbit.UI.Views.MainWindow"
-    x:DataType="viewModels:MainWindowViewModel"
+    x:DataType="root:MainWindowViewModel"
     xmlns="https://github.com/avaloniaui"
-    xmlns:viewModels="clr-namespace:Rawbit.UI.ViewModels"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:root="clr-namespace:Rawbit.UI.Root">
 
     <DockPanel>
         <Menu DockPanel.Dock="Top">

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Rawbit.UI.ViewModels;
+namespace Rawbit.UI.Adjustments.ViewModels;
 
 public class CurvePoint : INotifyPropertyChanged
 {

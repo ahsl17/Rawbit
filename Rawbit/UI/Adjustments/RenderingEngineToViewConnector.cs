@@ -4,10 +4,10 @@ using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using Rawbit.Graphics;
-using Rawbit.UI.ViewModels;
+using Rawbit.UI.Adjustments.ViewModels;
 using SkiaSharp;
 
-namespace Rawbit.UI.Views.Controls;
+namespace Rawbit.UI.Adjustments;
 
 public class RenderingEngineToViewConnector : ICustomDrawOperation
 {
@@ -46,17 +46,21 @@ public class RenderingEngineToViewConnector : ICustomDrawOperation
         var image = _imageOverride ?? _vm.ActiveImage;
         if (image != null)
         {
-            _engine.Render(
-                skiaContext.SkCanvas, 
-                image, 
-                (float)_vm.ExposureValue, 
-                (float)_vm.ShadowsValue,
-                (float)_vm.HighlightsValue,
-                _vm.CurvePointsPacked,
-                _vm.CurvePointCount,
+            var shader = new ShaderSettings(
+                (float)_vm.LightAdjustments.ExposureValue,
+                (float)_vm.LightAdjustments.ShadowsValue,
+                (float)_vm.LightAdjustments.HighlightsValue,
+                _vm.ToneCurveAdjustment.CurvePointsPacked,
+                _vm.ToneCurveAdjustment.CurvePointCount,
+                _vm.HslAdjustments.AdjustmentsPacked);
+
+            var render = new RenderSettings(
                 _zoom,
                 new SKPoint((float)_pan.X, (float)_pan.Y),
                 Bounds.ToSKRect());
+
+            var request = new RenderRequest(image, shader, render);
+            _engine.Render(skiaContext.SkCanvas, request);
         }
     }
 

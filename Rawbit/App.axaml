@@ -1,9 +1,11 @@
 <Application
     x:Class="Rawbit.App"
     xmlns="https://github.com/avaloniaui"
-    xmlns:viewModels="clr-namespace:Rawbit.UI.ViewModels"
     xmlns:views1="clr-namespace:Rawbit.UI.Views"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:projectSelection="clr-namespace:Rawbit.UI.ProjectSelection"
+    xmlns:viewModels1="clr-namespace:Rawbit.UI.Adjustments.ViewModels"
+    xmlns:adjustments="clr-namespace:Rawbit.UI.Adjustments">
     <Application.Resources>
         <SolidColorBrush Color="#171717" x:Key="BrushBackground" />
         <SolidColorBrush Color="#0f0f0f" x:Key="BrushCanvas" />
@@ -162,12 +164,12 @@
         </Style>
     </Application.Styles>
     <Application.DataTemplates>
-        <DataTemplate DataType="{x:Type viewModels:ProjectSelectionViewModel}">
-            <views1:ProjectSelectionView />
+        <DataTemplate DataType="{x:Type projectSelection:ProjectSelectionViewModel}">
+            <projectSelection:ProjectSelectionView />
         </DataTemplate>
 
-        <DataTemplate DataType="{x:Type viewModels:AdjustmentsViewModel}">
-            <views1:AdjustmentsView />
+        <DataTemplate DataType="{x:Type viewModels1:AdjustmentsViewModel}">
+            <adjustments:AdjustmentsView />
         </DataTemplate>
     </Application.DataTemplates>
 </Application>

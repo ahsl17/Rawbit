@@ -29,13 +29,10 @@ public class ToneShaderTests
 
         using var image = SKImage.FromBitmap(bitmap);
         // WHEN creating the tone shader
-        using var shader = ToneShader.CreateToneShader(
-            image,
-            exposure: 0f,
-            shadows: 0f,
-            highlights: 0f,
+        var settings = RenderTestDefaults.Shader(
             curvePoints: PackCurve(Array.Empty<float>()),
             curvePointCount: 0);
+        using var shader = ToneShader.CreateToneShader(image, settings);
 
         // THEN a shader instance is returned
         Assert.NotNull(shader);
@@ -111,16 +108,19 @@ public class ToneShaderTests
         float shadows,
         float highlights,
         float[]? curvePoints = null,
-        int curvePointCount = 0)
+        int curvePointCount = 0,
+        float[]? hslAdjustments = null)
     {
         curvePoints = PackCurve(curvePoints);
-        using var shader = ToneShader.CreateToneShader(
-            image,
-            exposure,
-            shadows,
-            highlights,
+        var hsl = hslAdjustments ?? RenderTestDefaults.EmptyHsl;
+        var settings = RenderTestDefaults.Shader(
+            exposure: exposure,
+            shadows: shadows,
+            highlights: highlights,
             curvePoints: curvePoints,
-            curvePointCount: curvePointCount);
+            curvePointCount: curvePointCount,
+            hslAdjustments: hsl);
+        using var shader = ToneShader.CreateToneShader(image, settings);
         using var surface = SKSurface.Create(new SKImageInfo(image.Width, image.Height, SKColorType.Rgba8888, SKAlphaType.Premul));
         surface.Canvas.Clear(SKColors.Transparent);
         using var paint = new SKPaint { Shader = shader, IsAntialias = false };
