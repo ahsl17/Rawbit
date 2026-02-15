@@ -46,18 +46,21 @@ public class RenderingEngineToViewConnector : ICustomDrawOperation
         var image = _imageOverride ?? _vm.ActiveImage;
         if (image != null)
         {
-            _engine.Render(
-                skiaContext.SkCanvas, 
-                image, 
-                (float)_vm.LightAdjustments.ExposureValue, 
+            var shader = new ShaderSettings(
+                (float)_vm.LightAdjustments.ExposureValue,
                 (float)_vm.LightAdjustments.ShadowsValue,
                 (float)_vm.LightAdjustments.HighlightsValue,
                 _vm.ToneCurveAdjustment.CurvePointsPacked,
                 _vm.ToneCurveAdjustment.CurvePointCount,
-                _vm.HslAdjustments.AdjustmentsPacked,
+                _vm.HslAdjustments.AdjustmentsPacked);
+
+            var render = new RenderSettings(
                 _zoom,
                 new SKPoint((float)_pan.X, (float)_pan.Y),
                 Bounds.ToSKRect());
+
+            var request = new RenderRequest(image, shader, render);
+            _engine.Render(skiaContext.SkCanvas, request);
         }
     }
 

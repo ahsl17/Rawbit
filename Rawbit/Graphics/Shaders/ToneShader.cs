@@ -52,15 +52,26 @@ public static partial class ToneShader
         int curvePointCount,
         float[] hslAdjustments)
     {
+        return CreateToneShader(source, new ShaderSettings(
+            exposure,
+            shadows,
+            highlights,
+            curvePoints,
+            curvePointCount,
+            hslAdjustments));
+    }
+
+    public static SKShader CreateToneShader(SKImage source, ShaderSettings settings)
+    {
         // A Uniform is a constant value for each pixel forwarded from the CPU to the GPU
         var uniforms = new SKRuntimeEffectUniforms(ToneEffect)
         {
-            { Uniforms.Exposure, exposure },
-            { Uniforms.Shadows, shadows },
-            { Uniforms.Highlights, highlights },
-            { Uniforms.CurvePoints, curvePoints },
-            { Uniforms.CurvePointCount, (float)curvePointCount },
-            { Uniforms.HslAdjustments, hslAdjustments }
+            { Uniforms.Exposure, settings.Exposure },
+            { Uniforms.Shadows, settings.Shadows },
+            { Uniforms.Highlights, settings.Highlights },
+            { Uniforms.CurvePoints, settings.CurvePoints },
+            { Uniforms.CurvePointCount, (float)settings.CurvePointCount },
+            { Uniforms.HslAdjustments, settings.HslAdjustments }
         };
 
         var children = new SKRuntimeEffectChildren(ToneEffect)

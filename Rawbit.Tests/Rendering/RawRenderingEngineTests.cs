@@ -9,8 +9,6 @@ namespace Rawbit.Tests.Rendering;
 
 public class RawRenderingEngineTests
 {
-    private static readonly float[] EmptyCurve = new float[16];
-
     [Fact]
     public void Render_PassThroughWhenNeutral()
     {
@@ -26,17 +24,9 @@ public class RawRenderingEngineTests
         var engine = new RawRenderingEngine();
 
         // WHEN rendering with neutral exposure and shadows
-        engine.Render(
-            surface.Canvas,
-            sourceImage,
-            exposure: 0f,
-            shadows: 0f,
-            highlights: 0f,
-            curvePoints: EmptyCurve,
-            curvePointCount: 0,
-            zoom:0f,
-            pan:new SKPoint(0f,0f),
-            destRect: new SKRect(0, 0, 2, 2));
+        var shader = RenderTestDefaults.Shader();
+        var render = RenderTestDefaults.Render(0f, new SKPoint(0f, 0f), new SKRect(0, 0, 2, 2));
+        engine.Render(surface.Canvas, new RenderRequest(sourceImage, shader, render));
 
         using var snapshot = surface.Snapshot();
         using var result = new SKBitmap(2, 2, SKColorType.Rgba8888, SKAlphaType.Premul);
@@ -44,16 +34,16 @@ public class RawRenderingEngineTests
 
         // THEN pixels should match the reference tone pipeline within tolerance
         AssertColorApprox(
-            TonePipelineReference.Apply(sourceBitmap.GetPixel(0, 0), 0f, 0f, 0f, EmptyCurve, 0),
+            TonePipelineReference.Apply(sourceBitmap.GetPixel(0, 0), 0f, 0f, 0f, RenderTestDefaults.EmptyCurve, 0),
             result.GetPixel(0, 0));
         AssertColorApprox(
-            TonePipelineReference.Apply(sourceBitmap.GetPixel(1, 0), 0f, 0f, 0f, EmptyCurve, 0),
+            TonePipelineReference.Apply(sourceBitmap.GetPixel(1, 0), 0f, 0f, 0f, RenderTestDefaults.EmptyCurve, 0),
             result.GetPixel(1, 0));
         AssertColorApprox(
-            TonePipelineReference.Apply(sourceBitmap.GetPixel(0, 1), 0f, 0f, 0f, EmptyCurve, 0),
+            TonePipelineReference.Apply(sourceBitmap.GetPixel(0, 1), 0f, 0f, 0f, RenderTestDefaults.EmptyCurve, 0),
             result.GetPixel(0, 1));
         AssertColorApprox(
-            TonePipelineReference.Apply(sourceBitmap.GetPixel(1, 1), 0f, 0f, 0f, EmptyCurve, 0),
+            TonePipelineReference.Apply(sourceBitmap.GetPixel(1, 1), 0f, 0f, 0f, RenderTestDefaults.EmptyCurve, 0),
             result.GetPixel(1, 1));
     }
 
@@ -68,47 +58,20 @@ public class RawRenderingEngineTests
         var engine = new RawRenderingEngine();
 
         // WHEN rendering twice with the same inputs
-        engine.Render(
-            surface.Canvas,
-            sourceImage,
-            exposure: 0f,
-            shadows: 0f,
-            highlights: 0f,
-            curvePoints: EmptyCurve,
-            curvePointCount: 0,
-            zoom:0f,
-            pan:new SKPoint(0f,0f),
-            destRect: new SKRect(0, 0, 2, 2));
+        var shader = RenderTestDefaults.Shader();
+        var render = RenderTestDefaults.Render(0f, new SKPoint(0f, 0f), new SKRect(0, 0, 2, 2));
+        engine.Render(surface.Canvas, new RenderRequest(sourceImage, shader, render));
         var shader1 = GetCachedShader(engine);
 
-        engine.Render(
-            surface.Canvas,
-            sourceImage,
-            exposure: 0f,
-            shadows: 0f,
-            highlights: 0f,
-            curvePoints: EmptyCurve,
-            curvePointCount: 0,
-            zoom:0f,
-            pan:new SKPoint(0f,0f),
-            destRect: new SKRect(0, 0, 2, 2));
+        engine.Render(surface.Canvas, new RenderRequest(sourceImage, shader, render));
         var shader2 = GetCachedShader(engine);
 
         // THEN the cached shader instance is reused
         Assert.Same(shader1, shader2);
 
         // WHEN exposure changes
-        engine.Render(
-            surface.Canvas,
-            sourceImage,
-            exposure: 1f,
-            shadows: 0f,
-            highlights: 0f,
-            curvePoints: EmptyCurve,
-            curvePointCount: 0,
-            zoom:0f,
-            pan:new SKPoint(0f,0f),
-            destRect: new SKRect(0, 0, 2, 2));
+        var brighterShader = RenderTestDefaults.Shader(exposure: 1f);
+        engine.Render(surface.Canvas, new RenderRequest(sourceImage, brighterShader, render));
         var shader3 = GetCachedShader(engine);
 
         // THEN the cached shader is rebuilt
