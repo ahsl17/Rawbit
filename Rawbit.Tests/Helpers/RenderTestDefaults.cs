@@ -12,6 +12,8 @@ internal static class RenderTestDefaults
         float exposure = 0f,
         float shadows = 0f,
         float highlights = 0f,
+        float temperature = 0f,
+        float tint = 0f,
         float[]? curvePoints = null,
         int curvePointCount = 0,
         float[]? hslAdjustments = null)
@@ -20,6 +22,8 @@ internal static class RenderTestDefaults
             exposure,
             shadows,
             highlights,
+            temperature,
+            tint,
             curvePoints ?? EmptyCurve,
             curvePointCount,
             hslAdjustments ?? EmptyHsl);

@@ -2,6 +2,8 @@
 uniform float exposure; 
 uniform float shadows; 
 uniform float highlights;
+uniform float temperature;
+uniform float tint;
 uniform float curvePoints[16];
 uniform float curvePointCount;
 
@@ -28,6 +30,12 @@ vec3 aces(vec3 x) {
 
 vec3 applyExposure(vec3 color, float ev) {
     return color * pow(2.0, ev);
+}
+
+vec3 applyWhiteBalance(vec3 color, float temp, float tintAmount) {
+    vec3 tempMult = vec3(1.0 + temp * 0.35, 1.0 + temp * 0.12, 1.0 - temp * 0.35);
+    vec3 tintMult = vec3(1.0 + tintAmount * 0.15, 1.0 - tintAmount * 0.3, 1.0 + tintAmount * 0.15);
+    return color * tempMult * tintMult;
 }
 
 vec3 applyShadows(vec3 color, float amount) {
@@ -149,6 +157,7 @@ half4 main(float2 fragCoord) {
 
     // Apply sliders
     rgb = applyExposure(rgb, exposure);
+    rgb = applyWhiteBalance(rgb, temperature, tint);
     rgb = applyShadows(rgb, shadows);
     rgb = applyHighlights(rgb, highlights);
     

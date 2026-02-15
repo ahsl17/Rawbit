@@ -66,6 +66,14 @@ jobs:
         with:
           path: artifacts
 
+      - name: Package Artifacts
+        run: |
+          mkdir -p release-assets
+          for dir in artifacts/*; do
+            name=$(basename "$dir")
+            tar -czf "release-assets/${name}.tar.gz" -C "$dir" .
+          done
+
       - name: Set Release Tag
         run: echo "RELEASE_TAG=v$(date -u +%Y.%m.%d).${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
 
@@ -76,4 +84,4 @@ jobs:
           name: ${{ env.RELEASE_TAG }}
           generate_release_notes: true
           files: |
-            artifacts/**/*
+            release-assets/*.tar.gz
