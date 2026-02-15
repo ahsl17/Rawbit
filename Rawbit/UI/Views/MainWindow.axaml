@@ -5,6 +5,7 @@
     WindowStartupLocation="CenterScreen"
     x:Class="Rawbit.UI.Views.MainWindow"
     x:DataType="root:MainWindowViewModel"
+    Icon="/Assets/logo.png"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:root="clr-namespace:Rawbit.UI.Root">
