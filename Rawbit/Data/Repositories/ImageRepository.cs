@@ -33,4 +33,35 @@ public class ImageRepository : IImageRepository
         await _dbContext.AddRangeAsync(images.Select(i => new Image { Path = i, Adjustments = Adjustments.BuildWithDefaultValues()})).ConfigureAwait(false);
         await _dbContext.SaveChangesAsync().ConfigureAwait(false);
     }
+
+    public async Task<Adjustments?> GetAdjustmentsByPathAsync(string imagePath)
+    {
+        var image = await _dbContext.Images
+            .Include(i => i.Adjustments)
+            .FirstOrDefaultAsync(i => i.Path == imagePath)
+            .ConfigureAwait(false);
+        return image?.Adjustments;
+    }
+
+    public async Task UpdateAdjustmentsByPathAsync(string imagePath, Adjustments adjustments)
+    {
+        var image = await _dbContext.Images
+            .Include(i => i.Adjustments)
+            .FirstOrDefaultAsync(i => i.Path == imagePath)
+            .ConfigureAwait(false);
+        if (image?.Adjustments == null)
+            return;
+
+        var target = image.Adjustments;
+        target.Exposure = adjustments.Exposure;
+        target.Shadows = adjustments.Shadows;
+        target.Highlights = adjustments.Highlights;
+        target.Temperature = adjustments.Temperature;
+        target.Tint = adjustments.Tint;
+        target.HslAdjustmentsJson = adjustments.HslAdjustmentsJson;
+        target.CurvePointsJson = adjustments.CurvePointsJson;
+        target.CurvePointCount = adjustments.CurvePointCount;
+
+        await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+    }
 }

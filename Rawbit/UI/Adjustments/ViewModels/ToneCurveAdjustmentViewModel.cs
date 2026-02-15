@@ -7,11 +7,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Rawbit.UI.Adjustments.ViewModels;
 
-public partial class ToneCurveAdjustmentViewModel : ObservableObject
+public class ToneCurveAdjustmentViewModel : ObservableObject
 {
-    private const int MaxCurvePoints = 8;
-    private readonly float[] _curvePointsPacked = new float[MaxCurvePoints * 2];
+    private readonly float[] _curvePointsPacked = new float[8 * 2];
     private int _curvePointCount;
+    private bool _suppressAdjustmentsChanged;
 
     public event Action? AdjustmentsChanged;
 
@@ -47,18 +47,20 @@ public partial class ToneCurveAdjustmentViewModel : ObservableObject
         }
 
         UpdateCurveCache();
-        AdjustmentsChanged?.Invoke();
+        if (!_suppressAdjustmentsChanged)
+            AdjustmentsChanged?.Invoke();
     }
 
     private void OnCurvePointPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         UpdateCurveCache();
-        AdjustmentsChanged?.Invoke();
+        if (!_suppressAdjustmentsChanged)
+            AdjustmentsChanged?.Invoke();
     }
 
     private void UpdateCurveCache()
     {
-        _curvePointCount = Math.Min(Points.Count, MaxCurvePoints);
+        _curvePointCount = Points.Count;
 
         var ordered = new List<CurvePoint>(Points);
         ordered.Sort((a, b) => a.X.CompareTo(b.X));
@@ -72,5 +74,28 @@ public partial class ToneCurveAdjustmentViewModel : ObservableObject
             _curvePointsPacked[i * 2] = (float)p.X;
             _curvePointsPacked[i * 2 + 1] = (float)p.Y;
         }
+    }
+
+    public void ApplyPacked(float[] packed, int count)
+    {
+        _suppressAdjustmentsChanged = true;
+        try
+        {
+            Points.Clear();
+            var max = Math.Min(count, packed.Length / 2);
+            for (int i = 0; i < max; i++)
+            {
+                var x = packed[i * 2];
+                var y = packed[i * 2 + 1];
+                Points.Add(new CurvePoint(x, y));
+            }
+        }
+        finally
+        {
+            _suppressAdjustmentsChanged = false;
+        }
+
+        UpdateCurveCache();
+        AdjustmentsChanged?.Invoke();
     }
 }

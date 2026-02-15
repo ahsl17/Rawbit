@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -19,7 +20,7 @@ public class CurvePoint : INotifyPropertyChanged
         get => _x;
         set
         {
-            if (value == _x)
+            if (Math.Abs(value - _x) < 0.01)
                 return;
             _x = value;
             OnPropertyChanged();
@@ -31,7 +32,7 @@ public class CurvePoint : INotifyPropertyChanged
         get => _y;
         set
         {
-            if (value == _y)
+            if (Math.Abs(value - _y) < 0.01)
                 return;
             _y = value;
             OnPropertyChanged();

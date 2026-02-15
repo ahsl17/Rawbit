@@ -9,26 +9,72 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:projectSelection="clr-namespace:Rawbit.UI.ProjectSelection">
-    <Grid ColumnDefinitions="*,*" VerticalAlignment="Center">
-        <Button
-            Command="{Binding OpenExistingProjectCommand}"
-            Content="Open project"
-            FontSize="25"
+    <Grid ColumnDefinitions="Auto,*">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        
+        <Image
             Grid.Column="0"
-            Height="100"
+            Source="/Assets/welcome-image.jpg"
+            Stretch="UniformToFill"
             HorizontalAlignment="Stretch"
-            HorizontalContentAlignment="Center"
-            VerticalContentAlignment="Center"
-            Width="250" />
-        <Button
-            Command="{Binding CreateNewProjectCommand}"
-            Content="New  project"
-            FontSize="25"
-            Grid.Column="1"
-            Height="100"
-            HorizontalAlignment="Stretch"
-            HorizontalContentAlignment="Center"
-            VerticalContentAlignment="Center"
-            Width="250" />
+            VerticalAlignment="Stretch" />
+
+        <Grid Grid.Column="1" RowDefinitions="Auto, Auto,Auto" Margin="16,50">
+            <TextBlock TextAlignment="Center" Text="Rawbit editor" FontSize="30"></TextBlock>
+            <WrapPanel Grid.Row="1" Orientation="Horizontal" ItemSpacing="8" HorizontalAlignment="Center" Margin="0,50,0,0">
+                <Button
+                    Command="{Binding OpenExistingProjectCommand}"
+                    Content="Open project"
+                    FontSize="22"
+                    Height="70"
+                    MinWidth="170"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center" />
+                <Button
+                    Command="{Binding CreateNewProjectCommand}"
+                    Content="New project"
+                    FontSize="22"
+                    Height="70"
+                    MinWidth="170"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center" />
+            </WrapPanel>
+
+            <Border Grid.Row="2" Margin="0,16,0,0" MaxWidth="560" Padding="16" CornerRadius="10" BorderBrush="#2B2B2B" BorderThickness="1" Background="#151515">
+                <StackPanel Spacing="12">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Recent Projects" FontWeight="SemiBold" />
+                        <TextBlock Text="Pick up where you left off" Opacity="0.7" FontSize="12" />
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding RecentlyOpenedProjects}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button
+                                    Command="{Binding OpenAsync}"
+                                    Background="Transparent"
+                                    BorderBrush="Transparent"
+                                    CornerRadius="8"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    Margin="0,0,0,8"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Stretch"
+                                    HorizontalAlignment="Stretch">
+                                    <Border Padding="10" CornerRadius="8" Background="#1E1E1E" BorderBrush="#2B2B2B" BorderThickness="1">
+                                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="10">
+                                            <TextBlock Grid.Column="1" Text="{Binding Project.Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding Project.Path}" Opacity="0.65" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                        </Grid>
+                                    </Border>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

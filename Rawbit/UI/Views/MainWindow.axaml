@@ -10,19 +10,6 @@
     xmlns:root="clr-namespace:Rawbit.UI.Root">
 
     <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="_File">
-                <MenuItem Header="_Open..." />
-                <Separator />
-                <MenuItem Header="_Exit" />
-            </MenuItem>
-            <MenuItem Header="_Edit">
-                <MenuItem Header="Copy" />
-                <MenuItem Header="Paste" />
-            </MenuItem>
-        </Menu>
-        <TextBlock />
-
         <ContentControl Content="{Binding Content}" />
     </DockPanel>
 </Window>
