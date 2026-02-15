@@ -55,23 +55,40 @@ vec3 applyHslAdjustments(vec3 rgb) {
     vec3 hsl = rgbToHsl(rgb);
     float hueDeg = hsl.x * 360.0;
     float totalWeight = 0.0;
-    vec3 totalAdj = vec3(0.0);
+    float totalHue = 0.0;
+    float totalSat = 0.0;
+    float totalLum = 0.0;
     const float width = 30.0;
+
+    // Avoid unstable hue math for near-neutral colors.
+    if (abs(rgb.r - rgb.g) < 0.001 && abs(rgb.g - rgb.b) < 0.001) {
+        return rgb;
+    }
+
+    // Reduce adjustment influence in low-saturation areas to prevent noisy luminance shifts.
+    float saturationMask = smoothstep(0.05, 0.20, hsl.y);
+    float luminanceWeight = smoothstep(0.0, 1.0, hsl.y);
 
     for (int i = 0; i < 8; i++) {
         float center = getHslCenter(i);
         float d = hueDistance(hueDeg, center);
         float w = smoothstep(width, 0.0, d);
         vec3 adj = getHslAdjustment(i);
-        totalAdj += adj * w;
+        float hueSatWeight = w * saturationMask;
+        float lumWeight = w * luminanceWeight;
+        totalHue += adj.x * hueSatWeight;
+        totalSat += adj.y * hueSatWeight;
+        totalLum += adj.z * lumWeight;
         totalWeight += w;
     }
 
     if (totalWeight > 0.0) {
-        vec3 adj = totalAdj / totalWeight;
-        hsl.x = fract(hsl.x + (adj.x / 360.0) + 1.0);
-        hsl.y = clamp(hsl.y * (1.0 + adj.y * 0.01), 0.0, 1.0);
-        hsl.z = clamp(hsl.z + adj.z * 0.01, 0.0, 1.0);
+        float hueAdj = totalHue / totalWeight;
+        float satAdj = totalSat / totalWeight;
+        float lumAdj = totalLum / totalWeight;
+        hsl.x = fract(hsl.x + (hueAdj / 360.0) + 1.0);
+        hsl.y = clamp(hsl.y * (1.0 + satAdj * 0.01), 0.0, 1.0);
+        hsl.z = clamp(hsl.z + lumAdj * 0.01, 0.0, 1.0);
     }
 
     return hslToRgb(hsl);

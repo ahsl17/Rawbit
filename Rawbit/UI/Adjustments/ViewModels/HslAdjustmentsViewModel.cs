@@ -1,83 +1,97 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
+using System.Linq;
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Rawbit.UI.Adjustments.ViewModels;
+
+public enum HslColors { Red, Orange, Yellow, Green, Aqua, Blue, Purple, Magenta }
+
 
 public partial class HslAdjustmentsViewModel : ObservableObject
 {
     private const int HslColorCount = 8;
     private readonly float[] _hslAdjustmentsPacked = new float[HslColorCount * 3];
+    private static readonly IReadOnlyDictionary<HslColors, IBrush> HslSwatchBrushes =
+        new Dictionary<HslColors, IBrush>
+        {
+            { HslColors.Red, Brushes.Red },
+            { HslColors.Orange, Brushes.Orange },
+            { HslColors.Yellow, Brushes.Yellow },
+            { HslColors.Green, Brushes.Green },
+            { HslColors.Aqua, Brushes.Aqua },
+            { HslColors.Blue, Brushes.Blue },
+            { HslColors.Purple, Brushes.Purple },
+            { HslColors.Magenta, Brushes.Magenta }
+        };
 
     public event Action? AdjustmentsChanged;
 
-    public ObservableCollection<HslColorAdjustmentViewModel> Adjustments { get; } = new();
+    public ObservableCollection<HslColorAdjustmentViewModel> AdjustmentsViewModels { get; } = new();
 
+    [ObservableProperty] private HslColorAdjustmentViewModel _displayedHslColorAdjustment;
+    
     public float[] AdjustmentsPacked => _hslAdjustmentsPacked;
 
     public HslAdjustmentsViewModel()
     {
-        Adjustments.CollectionChanged += OnHslAdjustmentsChanged;
-        SeedHslAdjustments();
+        InitHslAdjustments();
+        DisplayedHslColorAdjustment = AdjustmentsViewModels[0];
+        DisplayedHslColorAdjustment.IsSelected = true;
         UpdateHslCache();
     }
-
-    private void OnHslAdjustmentsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    
+    private void InitHslAdjustments()
     {
-        if (e.OldItems != null)
-        {
-            foreach (var item in e.OldItems)
-            {
-                if (item is HslColorAdjustmentViewModel hsl)
-                    hsl.PropertyChanged -= OnHslAdjustmentPropertyChanged;
-            }
-        }
-
-        if (e.NewItems != null)
-        {
-            foreach (var item in e.NewItems)
-            {
-                if (item is HslColorAdjustmentViewModel hsl)
-                    hsl.PropertyChanged += OnHslAdjustmentPropertyChanged;
-            }
-        }
-
-        UpdateHslCache();
-        AdjustmentsChanged?.Invoke();
-    }
-
-    private void OnHslAdjustmentPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        UpdateHslCache();
-        AdjustmentsChanged?.Invoke();
-    }
-
-    private void SeedHslAdjustments()
-    {
-        if (Adjustments.Count > 0)
+        if (AdjustmentsViewModels.Count > 0)
             return;
 
-        Adjustments.Add(new HslColorAdjustmentViewModel("Red"));
-        Adjustments.Add(new HslColorAdjustmentViewModel("Orange"));
-        Adjustments.Add(new HslColorAdjustmentViewModel("Yellow"));
-        Adjustments.Add(new HslColorAdjustmentViewModel("Green"));
-        Adjustments.Add(new HslColorAdjustmentViewModel("Aqua"));
-        Adjustments.Add(new HslColorAdjustmentViewModel("Blue"));
-        Adjustments.Add(new HslColorAdjustmentViewModel("Purple"));
-        Adjustments.Add(new HslColorAdjustmentViewModel("Magenta"));
+        foreach (var color in Enum.GetValues<HslColors>())
+        {
+            if (!HslSwatchBrushes.TryGetValue(color, out var brush))
+                continue;
+
+            AdjustmentsViewModels.Add(new HslColorAdjustmentViewModel(color, brush, OnAdjustmentsChanged, SelectAdjustment));
+        }
     }
 
+    public void OnAdjustmentsChanged()
+    {
+        UpdateHslCache();
+        AdjustmentsChanged?.Invoke();
+
+    }
+
+    private void SelectAdjustment(HslColorAdjustmentViewModel adjustment)
+    {
+        if (DisplayedHslColorAdjustment == adjustment)
+            return;
+
+        DisplayedHslColorAdjustment = adjustment;
+    }
+
+    partial void OnDisplayedHslColorAdjustmentChanged(
+        HslColorAdjustmentViewModel oldValue,
+        HslColorAdjustmentViewModel newValue)
+    {
+        if (oldValue != null)
+            oldValue.IsSelected = false;
+
+        if (newValue != null)
+            newValue.IsSelected = true;
+    }
+    
     private void UpdateHslCache()
     {
         for (int i = 0; i < _hslAdjustmentsPacked.Length; i++)
             _hslAdjustmentsPacked[i] = 0f;
 
-        var count = Math.Min(Adjustments.Count, HslColorCount);
+        var count = Math.Min(AdjustmentsViewModels.Count, HslColorCount);
         for (int i = 0; i < count; i++)
         {
-            var hsl = Adjustments[i];
+            var hsl = AdjustmentsViewModels[i];
             _hslAdjustmentsPacked[i * 3] = (float)hsl.Hue;
             _hslAdjustmentsPacked[i * 3 + 1] = (float)hsl.Saturation;
             _hslAdjustmentsPacked[i * 3 + 2] = (float)hsl.Luminance;

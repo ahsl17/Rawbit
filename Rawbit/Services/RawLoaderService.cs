@@ -46,16 +46,14 @@ public class RawLoaderService : IRawLoaderService
             cfg.UseCameraWb = true;
             cfg.NoAutoBright = true; 
             cfg.AutoScale = true;
-            cfg.HighlightMode = 1;
-        
+            cfg.HighlightMode = 5;
             cfg.UserQual = DemosaicAlgorithm.AdaptiveHomogeneityDirected; 
 
             // Force absolute linear data
             cfg.Gamma[0] = 1.0; 
             cfg.Gamma[1] = 1.0;
         
-            // Prevent highlight clipping
-            cfg.Threshold = 0; 
+            cfg.Threshold = 0.0f; 
         });
     
         using ProcessedImage image = context.MakeDcrawMemoryImage();

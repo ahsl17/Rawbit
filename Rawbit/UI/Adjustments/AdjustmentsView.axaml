@@ -40,6 +40,7 @@
                 Padding="20">
                 <ScrollViewer
                     HorizontalScrollBarVisibility="Disabled"
+                    Padding="0,0,20,0"
                     VerticalScrollBarVisibility="Auto">
                     <StackPanel Spacing="25">
                         <TextBlock Classes="section" Text="IMAGE ADJUSTMENTS" />
