@@ -6,6 +6,8 @@ public sealed record ShaderSettings(
     float Exposure,
     float Shadows,
     float Highlights,
+    float Temperature,
+    float Tint,
     float[] CurvePoints,
     int CurvePointCount,
     float[] HslAdjustments)
@@ -18,6 +20,8 @@ public sealed record ShaderSettings(
             hash = hash * 31 + Exposure.GetHashCode();
             hash = hash * 31 + Shadows.GetHashCode();
             hash = hash * 31 + Highlights.GetHashCode();
+            hash = hash * 31 + Temperature.GetHashCode();
+            hash = hash * 31 + Tint.GetHashCode();
             hash = hash * 31 + CurvePointCount;
             hash = hash * 31 + HashArray(CurvePoints, Math.Min(CurvePoints.Length, CurvePointCount * 2));
             hash = hash * 31 + HashArray(HslAdjustments, HslAdjustments.Length);

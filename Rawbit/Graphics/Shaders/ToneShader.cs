@@ -52,10 +52,35 @@ public static partial class ToneShader
         int curvePointCount,
         float[] hslAdjustments)
     {
+        return CreateToneShader(
+            source,
+            exposure,
+            shadows,
+            highlights,
+            0f,
+            0f,
+            curvePoints,
+            curvePointCount,
+            hslAdjustments);
+    }
+
+    public static SKShader CreateToneShader(
+        SKImage source,
+        float exposure,
+        float shadows,
+        float highlights,
+        float temperature,
+        float tint,
+        float[] curvePoints,
+        int curvePointCount,
+        float[] hslAdjustments)
+    {
         return CreateToneShader(source, new ShaderSettings(
             exposure,
             shadows,
             highlights,
+            temperature,
+            tint,
             curvePoints,
             curvePointCount,
             hslAdjustments));
@@ -69,6 +94,8 @@ public static partial class ToneShader
             { Uniforms.Exposure, settings.Exposure },
             { Uniforms.Shadows, settings.Shadows },
             { Uniforms.Highlights, settings.Highlights },
+            { Uniforms.Temperature, settings.Temperature },
+            { Uniforms.Tint, settings.Tint },
             { Uniforms.CurvePoints, settings.CurvePoints },
             { Uniforms.CurvePointCount, (float)settings.CurvePointCount },
             { Uniforms.HslAdjustments, settings.HslAdjustments }
