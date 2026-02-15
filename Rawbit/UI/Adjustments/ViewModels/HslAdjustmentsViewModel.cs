@@ -7,13 +7,24 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Rawbit.UI.Adjustments.ViewModels;
 
-public enum HslColors { Red, Orange, Yellow, Green, Aqua, Blue, Purple, Magenta }
-
+public enum HslColors
+{
+    Red,
+    Orange,
+    Yellow,
+    Green,
+    Aqua,
+    Blue,
+    Purple,
+    Magenta
+}
 
 public partial class HslAdjustmentsViewModel : ObservableObject
 {
     private const int HslColorCount = 8;
     private readonly float[] _hslAdjustmentsPacked = new float[HslColorCount * 3];
+    private bool _suppressAdjustmentsChanged;
+
     private static readonly IReadOnlyDictionary<HslColors, IBrush> HslSwatchBrushes =
         new Dictionary<HslColors, IBrush>
         {
@@ -32,7 +43,7 @@ public partial class HslAdjustmentsViewModel : ObservableObject
     public ObservableCollection<HslColorAdjustmentViewModel> AdjustmentsViewModels { get; } = new();
 
     [ObservableProperty] private HslColorAdjustmentViewModel _displayedHslColorAdjustment;
-    
+
     public float[] AdjustmentsPacked => _hslAdjustmentsPacked;
 
     public HslAdjustmentsViewModel()
@@ -42,7 +53,7 @@ public partial class HslAdjustmentsViewModel : ObservableObject
         DisplayedHslColorAdjustment.IsSelected = true;
         UpdateHslCache();
     }
-    
+
     private void InitHslAdjustments()
     {
         if (AdjustmentsViewModels.Count > 0)
@@ -53,15 +64,41 @@ public partial class HslAdjustmentsViewModel : ObservableObject
             if (!HslSwatchBrushes.TryGetValue(color, out var brush))
                 continue;
 
-            AdjustmentsViewModels.Add(new HslColorAdjustmentViewModel(color, brush, OnAdjustmentsChanged, SelectAdjustment));
+            AdjustmentsViewModels.Add(new HslColorAdjustmentViewModel(color, brush, OnAdjustmentsChanged,
+                SelectAdjustment));
         }
     }
 
-    public void OnAdjustmentsChanged()
+    private void OnAdjustmentsChanged()
     {
         UpdateHslCache();
-        AdjustmentsChanged?.Invoke();
+        if (!_suppressAdjustmentsChanged)
+            AdjustmentsChanged?.Invoke();
+    }
 
+    public void ApplyPacked(float[] packed)
+    {
+        _suppressAdjustmentsChanged = true;
+        try
+        {
+            for (int i = 0; i < AdjustmentsViewModels.Count; i++)
+            {
+                var baseIndex = i * 3;
+                if (baseIndex + 2 >= packed.Length)
+                    break;
+                var hsl = AdjustmentsViewModels[i];
+                hsl.Hue = packed[baseIndex];
+                hsl.Saturation = packed[baseIndex + 1];
+                hsl.Luminance = packed[baseIndex + 2];
+            }
+        }
+        finally
+        {
+            _suppressAdjustmentsChanged = false;
+        }
+
+        UpdateHslCache();
+        AdjustmentsChanged?.Invoke();
     }
 
     private void SelectAdjustment(HslColorAdjustmentViewModel adjustment)
@@ -72,17 +109,14 @@ public partial class HslAdjustmentsViewModel : ObservableObject
         DisplayedHslColorAdjustment = adjustment;
     }
 
-    partial void OnDisplayedHslColorAdjustmentChanged(
-        HslColorAdjustmentViewModel oldValue,
+    partial void OnDisplayedHslColorAdjustmentChanged(HslColorAdjustmentViewModel? oldValue,
         HslColorAdjustmentViewModel newValue)
     {
-        if (oldValue != null)
+        if (oldValue is not null)
             oldValue.IsSelected = false;
-
-        if (newValue != null)
-            newValue.IsSelected = true;
+        newValue.IsSelected = true;
     }
-    
+
     private void UpdateHslCache()
     {
         for (int i = 0; i < _hslAdjustmentsPacked.Length; i++)

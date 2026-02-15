@@ -1,13 +1,19 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Rawbit.Data.ApplicationState;
 using Rawbit.Data.DbContext;
+using Rawbit.Data.Repositories.Interfaces;
 using Rawbit.Helpers;
 using Rawbit.Services.Interfaces;
+using Rawbit.UI.ProjectSelection.ViewModels;
 using Rawbit.UI.Root.Interfaces;
 
 namespace Rawbit.UI.ProjectSelection;
@@ -19,22 +25,28 @@ public partial class ProjectSelectionViewModel : INavigableViewModel
     private readonly IViewNavigationService _viewNavigationService;
     private readonly IProjectDbPathProvider _projectDbPathProvider;
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILocalAppStateRepository _localAppStateRepository;
 
+
+    public ObservableCollection<RecentProjectViewModel> RecentlyOpenedProjects => new(_localAppStateRepository.GetRecentlyOpenedProjects().Select(p => new RecentProjectViewModel(p , OpenAsync)));
+    
     public ProjectSelectionViewModel(IRawLoaderService rawLoaderService, 
         IProjectLoaderService projectLoaderService,
         IViewNavigationService viewNavigationService,
         IProjectDbPathProvider projectDbPathProvider,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        ILocalAppStateRepository localAppStateRepository)
     {
         _rawLoaderService = rawLoaderService;
         _projectLoaderService = projectLoaderService;
         _viewNavigationService = viewNavigationService;
         _projectDbPathProvider = projectDbPathProvider;
         _serviceProvider = serviceProvider;
+        _localAppStateRepository = localAppStateRepository;
     }
 
     [RelayCommand]
-    public async Task CreateNewProjectAsync()
+    private async Task CreateNewProjectAsync()
     {
         var file = await FileHelper.SaveFileAsync("Create a new project", "Rawbit Project", "rbproj").ConfigureAwait(false);
         if (file == null) return;
@@ -46,20 +58,31 @@ public partial class ProjectSelectionViewModel : INavigableViewModel
         await InitDbAsync(Path.Combine(directoryPath, rbDataFolderName), file.Name).ConfigureAwait(false);
         var thumbnailsFromFolder = _projectLoaderService.LoadThumbnailsFromFolder(directoryPath);
         await _projectLoaderService.RegisterImagesAsync(thumbnailsFromFolder.Select(t => t.Path).ToList()).ConfigureAwait(false);
+        _localAppStateRepository.WriteRecentlyOpenedProject(file.Name.Replace(".rbproj", ""), directoryPath);
         _viewNavigationService.NavigateToAdjustments(thumbnailsFromFolder);
     }
 
     [RelayCommand]
-    public async Task OpenExistingProjectAsync()
+    private async Task OpenExistingProjectAsync()
     {
         var files = await FileHelper.SelectFilesFromFilePickerAsync("Select a Rawbit project", "Rawbit Project", new[] { "rbproj" }).ConfigureAwait(false);
         if (files.Count == 0) return;
-        var directoryPath = Path.GetDirectoryName(files[0].Path.AbsolutePath);
+        var absolutePath = files[0].Path.AbsolutePath;
+        var name = files[0].Name;
+        var directoryPath = Path.GetDirectoryName(absolutePath);
         if (directoryPath is null) return;
-        var rbDataFolderName = files[0].Name.Replace(".rbproj", "") + ".rbdata";
 
-        await InitDbAsync(Path.Combine(directoryPath, rbDataFolderName), files[0].Name).ConfigureAwait(false);
-        _viewNavigationService.NavigateToAdjustments(_projectLoaderService.LoadThumbnailsFromFolder(directoryPath));
+        await OpenAsync(directoryPath, name);
+    }
+
+    private async Task OpenAsync(string projectPath, string name)
+    {
+        var rbDataFolderName = name.Replace(".rbproj", "") + ".rbdata";
+
+        await InitDbAsync(Path.Combine(projectPath, rbDataFolderName), name).ConfigureAwait(false);
+        _localAppStateRepository.WriteRecentlyOpenedProject(name.Replace(".rbproj", ""), projectPath);
+
+        _viewNavigationService.NavigateToAdjustments(_projectLoaderService.LoadThumbnailsFromFolder(projectPath));
     }
 
     private async Task InitDbAsync(string path, string name)

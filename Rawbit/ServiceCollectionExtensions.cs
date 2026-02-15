@@ -17,6 +17,7 @@ public static class ServiceCollectionExtensions
             collection.AddSingleton<IProjectDbPathProvider, ProjectDbPathProvider>();
             collection.AddDbContext<RawbitProjectContext>();
             
+            collection.AddScoped<ILocalAppStateRepository, LocalAppStateRepository>();
             collection.AddScoped<IImageRepository, ImageRepository>();
             collection.AddSingleton<IViewNavigationService, ViewNavigationService>();
             collection.AddSingleton<IProjectLoaderService, ProjectLoaderService>();

@@ -15,7 +15,7 @@ public class CurveEditor : Control
     private const double Padding = 10;
     private const double HandleRadius = 5;
     private const double MinGap = 0.02;
-    private const int MaxPoints = 8;
+    public const int MaxPoints = 8;
 
     public static readonly StyledProperty<IList<CurvePoint>> PointsProperty =
         AvaloniaProperty.Register<CurveEditor, IList<CurvePoint>>(
@@ -133,9 +133,6 @@ public class CurveEditor : Control
 
     private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (Points == null)
-            return;
-
         var point = e.GetPosition(this);
         var plot = GetPlotRect();
         var points = GetSortedPoints();
@@ -207,9 +204,6 @@ public class CurveEditor : Control
 
     private void UpdateFromPointer(Point point, Rect plot)
     {
-        if (Points == null)
-            return;
-
         var (x, y) = ScreenToPlot(plot, point);
         x = Clamp(x, 0, 1);
         y = Clamp(y, 0, 1);
@@ -384,7 +378,7 @@ public class CurveEditor : Control
 
     private IReadOnlyList<CurvePoint> GetSortedPoints()
     {
-        if (Points == null || Points.Count == 0)
+        if (Points.Count == 0)
             return Array.Empty<CurvePoint>();
 
         var list = new List<CurvePoint>(Points);
