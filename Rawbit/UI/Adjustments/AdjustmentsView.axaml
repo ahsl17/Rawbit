@@ -47,6 +47,8 @@
 
                         <controls:LightAdjustmentsControl DataContext="{Binding LightAdjustments}" />
 
+                        <controls:WhiteBalanceControl DataContext="{Binding WhiteBalance}" />
+
                         <StackPanel Spacing="10">
                             <TextBlock
                                 Classes="muted"

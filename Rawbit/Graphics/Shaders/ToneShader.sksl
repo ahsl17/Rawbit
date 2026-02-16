@@ -2,6 +2,8 @@
 uniform float exposure; 
 uniform float shadows; 
 uniform float highlights;
+uniform float whites;
+uniform float blacks;
 uniform float temperature;
 uniform float tint;
 uniform float curvePoints[16];
@@ -44,15 +46,76 @@ vec3 applyShadows(vec3 color, float amount) {
     return color * pow(2.0, amount * mask);
 }
 
+float tanhApprox(float x) {
+    float e = exp(2.0 * x);
+    return (e - 1.0) / (e + 1.0);
+}
+
 vec3 applyHighlights(vec3 color, float amount) {
-    float luma = getLuma(color);
-    float mask = smoothstep(0.6, 1.0, luma);
+    float highlightsAdj = clamp(amount, -1.0, 1.0);
+    if (abs(highlightsAdj) < 1e-4) {
+        return color;
+    }
 
-    float exposure = pow(2.0, amount * mask);
+    float luma = getLuma(max(color, vec3(0.0)));
+    float maskInput = tanhApprox(luma * 1.5);
+    float highlightMask = smoothstep(0.3, 0.95, maskInput);
+    if (highlightMask < 1e-3) {
+        return color;
+    }
 
-    // preserve color ratios and avoid blowing up saturation
-    float newLuma = luma * exposure;
-    return color * (newLuma / max(luma, 1e-5));
+    vec3 adjustedColor;
+    if (highlightsAdj < 0.0) {
+        float newLuma;
+        if (luma <= 1.0) {
+            float gamma = 1.0 - highlightsAdj * 1.75;
+            newLuma = pow(max(luma, 0.0), gamma);
+        } else {
+            float lumaExcess = luma - 1.0;
+            float compressionStrength = (-highlightsAdj) * 6.0;
+            float compressedExcess = lumaExcess / (1.0 + lumaExcess * compressionStrength);
+            newLuma = 1.0 + compressedExcess;
+        }
+
+        vec3 tonallyAdjusted = color * (newLuma / max(luma, 1e-4));
+        float desaturationAmount = smoothstep(1.0, 10.0, luma);
+        vec3 whitePoint = vec3(newLuma);
+        adjustedColor = mix(tonallyAdjusted, whitePoint, desaturationAmount);
+    } else {
+        float adjustment = highlightsAdj * 1.75;
+        float factor = pow(2.0, adjustment);
+        adjustedColor = color * factor;
+    }
+
+    return mix(color, adjustedColor, highlightMask);
+}
+
+vec3 applyWhites(vec3 color, float amount) {
+    float whitesAdj = clamp(amount, -1.0, 1.0);
+    if (abs(whitesAdj) < 1e-4) {
+        return color;
+    }
+
+    float whiteLevel = 1.0 - whitesAdj * 0.25;
+    return color / max(whiteLevel, 0.01);
+}
+
+vec3 applyBlacks(vec3 color, float amount) {
+    float blacksAdj = clamp(amount, -1.0, 1.0);
+    if (abs(blacksAdj) < 1e-4) {
+        return color;
+    }
+
+    float luma = getLuma(max(color, vec3(0.0)));
+    float mask = 1.0 - smoothstep(0.0, 0.25, luma);
+    if (mask < 1e-3) {
+        return color;
+    }
+
+    float adjustment = blacksAdj * 0.75;
+    float factor = pow(2.0, adjustment);
+    vec3 adjusted = color * factor;
+    return mix(color, adjusted, mask);
 }
 // -----
 // End sliders functions
@@ -158,6 +221,8 @@ half4 main(float2 fragCoord) {
     // Apply sliders
     rgb = applyExposure(rgb, exposure);
     rgb = applyWhiteBalance(rgb, temperature, tint);
+    rgb = applyWhites(rgb, whites);
+    rgb = applyBlacks(rgb, blacks);
     rgb = applyShadows(rgb, shadows);
     rgb = applyHighlights(rgb, highlights);
     

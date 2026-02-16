@@ -24,6 +24,7 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
 
     // UI state
     public LightAdjustmentsViewModel LightAdjustments { get; }
+    public WhiteBalanceViewModel WhiteBalance { get; }
     public HslAdjustmentsViewModel HslAdjustments { get; }
     public ToneCurveAdjustmentViewModel ToneCurveAdjustment { get; }
     
@@ -88,9 +89,11 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
         _rawLoaderService = rawLoaderService;
         _adjustmentsStore = adjustmentsStore;
         LightAdjustments = new LightAdjustmentsViewModel();
+        WhiteBalance = new WhiteBalanceViewModel();
         HslAdjustments = new HslAdjustmentsViewModel();
         ToneCurveAdjustment = new ToneCurveAdjustmentViewModel();
         LightAdjustments.AdjustmentsChanged += AdjustAndRedraw;
+        WhiteBalance.AdjustmentsChanged += AdjustAndRedraw;
         HslAdjustments.AdjustmentsChanged += AdjustAndRedraw;
         ToneCurveAdjustment.AdjustmentsChanged += AdjustAndRedraw;
     }
@@ -236,9 +239,11 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
         {
             LightAdjustments.ExposureValue = adjustments.Exposure;
             LightAdjustments.ShadowsValue = adjustments.Shadows;
-            LightAdjustments.HighlightsValue = adjustments.Highlights;
-            LightAdjustments.TemperatureValue = adjustments.Temperature;
-            LightAdjustments.TintValue = adjustments.Tint;
+            LightAdjustments.HighlightsValue = Math.Clamp(adjustments.Highlights, -1f, 1f);
+            LightAdjustments.WhitesValue = Math.Clamp(adjustments.Whites, -1f, 1f);
+            LightAdjustments.BlacksValue = Math.Clamp(adjustments.Blacks, -1f, 1f);
+            WhiteBalance.TemperatureValue = adjustments.Temperature;
+            WhiteBalance.TintValue = adjustments.Tint;
 
             HslAdjustments.ApplyPacked(adjustments.Hsl);
             ToneCurveAdjustment.ApplyPacked(adjustments.CurvePoints, adjustments.CurvePointCount);
@@ -273,8 +278,10 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
             (float)LightAdjustments.ExposureValue,
             (float)LightAdjustments.ShadowsValue,
             (float)LightAdjustments.HighlightsValue,
-            (float)LightAdjustments.TemperatureValue,
-            (float)LightAdjustments.TintValue,
+            (float)LightAdjustments.WhitesValue,
+            (float)LightAdjustments.BlacksValue,
+            (float)WhiteBalance.TemperatureValue,
+            (float)WhiteBalance.TintValue,
             HslAdjustments.AdjustmentsPacked,
             ToneCurveAdjustment.CurvePointsPacked,
             ToneCurveAdjustment.CurvePointCount);

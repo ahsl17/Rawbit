@@ -56,6 +56,8 @@ public class ImageRepository : IImageRepository
         target.Exposure = adjustments.Exposure;
         target.Shadows = adjustments.Shadows;
         target.Highlights = adjustments.Highlights;
+        target.Whites = adjustments.Whites;
+        target.Blacks = adjustments.Blacks;
         target.Temperature = adjustments.Temperature;
         target.Tint = adjustments.Tint;
         target.HslAdjustmentsJson = adjustments.HslAdjustmentsJson;

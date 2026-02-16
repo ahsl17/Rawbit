@@ -34,16 +34,16 @@ public class RawRenderingEngineTests
 
         // THEN pixels should match the reference tone pipeline within tolerance
         AssertColorApprox(
-            TonePipelineReference.Apply(sourceBitmap.GetPixel(0, 0), 0f, 0f, 0f, RenderTestDefaults.EmptyCurve, 0),
+            TonePipelineReference.Apply(sourceBitmap.GetPixel(0, 0), 0f, 0f, 0f, 0f, 0f, RenderTestDefaults.EmptyCurve, 0),
             result.GetPixel(0, 0));
         AssertColorApprox(
-            TonePipelineReference.Apply(sourceBitmap.GetPixel(1, 0), 0f, 0f, 0f, RenderTestDefaults.EmptyCurve, 0),
+            TonePipelineReference.Apply(sourceBitmap.GetPixel(1, 0), 0f, 0f, 0f, 0f, 0f, RenderTestDefaults.EmptyCurve, 0),
             result.GetPixel(1, 0));
         AssertColorApprox(
-            TonePipelineReference.Apply(sourceBitmap.GetPixel(0, 1), 0f, 0f, 0f, RenderTestDefaults.EmptyCurve, 0),
+            TonePipelineReference.Apply(sourceBitmap.GetPixel(0, 1), 0f, 0f, 0f, 0f, 0f, RenderTestDefaults.EmptyCurve, 0),
             result.GetPixel(0, 1));
         AssertColorApprox(
-            TonePipelineReference.Apply(sourceBitmap.GetPixel(1, 1), 0f, 0f, 0f, RenderTestDefaults.EmptyCurve, 0),
+            TonePipelineReference.Apply(sourceBitmap.GetPixel(1, 1), 0f, 0f, 0f, 0f, 0f, RenderTestDefaults.EmptyCurve, 0),
             result.GetPixel(1, 1));
     }
 

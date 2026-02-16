@@ -10,6 +10,8 @@ internal static class TonePipelineReference
         float exposure,
         float shadows,
         float highlights,
+        float whites,
+        float blacks,
         float[] curvePoints,
         int curvePointCount)
     {
@@ -18,6 +20,8 @@ internal static class TonePipelineReference
         var b = input.Blue / 255f;
 
         ApplyExposure(ref r, ref g, ref b, exposure);
+        ApplyWhites(ref r, ref g, ref b, whites);
+        ApplyBlacks(ref r, ref g, ref b, blacks);
         ApplyShadows(ref r, ref g, ref b, shadows);
         ApplyHighlights(ref r, ref g, ref b, highlights);
         ApplyAces(ref r, ref g, ref b);
@@ -54,14 +58,96 @@ internal static class TonePipelineReference
 
     private static void ApplyHighlights(ref float r, ref float g, ref float b, float amount)
     {
-        var luma = GetLuma(r, g, b);
-        var mask = Smoothstep(0.6f, 1.0f, luma);
-        var exposure = MathF.Pow(2f, amount * mask);
-        var newLuma = luma * exposure;
-        var scale = newLuma / MathF.Max(luma, 1e-5f);
+        var highlightsAdj = Clamp(amount, -1f, 1f);
+        if (MathF.Abs(highlightsAdj) < 1e-4f)
+            return;
+
+        var safeR = MathF.Max(r, 0f);
+        var safeG = MathF.Max(g, 0f);
+        var safeB = MathF.Max(b, 0f);
+        var luma = GetLuma(safeR, safeG, safeB);
+        var maskInput = TanhApprox(luma * 1.5f);
+        var highlightMask = Smoothstep(0.3f, 0.95f, maskInput);
+        if (highlightMask < 1e-3f)
+            return;
+
+        float adjustedR;
+        float adjustedG;
+        float adjustedB;
+
+        if (highlightsAdj < 0f)
+        {
+            float newLuma;
+            if (luma <= 1f)
+            {
+                var gamma = 1f - highlightsAdj * 1.75f;
+                newLuma = MathF.Pow(MathF.Max(luma, 0f), gamma);
+            }
+            else
+            {
+                var lumaExcess = luma - 1f;
+                var compressionStrength = (-highlightsAdj) * 6f;
+                var compressedExcess = lumaExcess / (1f + lumaExcess * compressionStrength);
+                newLuma = 1f + compressedExcess;
+            }
+
+            var tonalScale = newLuma / MathF.Max(luma, 1e-4f);
+            var tonallyAdjustedR = r * tonalScale;
+            var tonallyAdjustedG = g * tonalScale;
+            var tonallyAdjustedB = b * tonalScale;
+
+            var desaturationAmount = Smoothstep(1f, 10f, luma);
+            adjustedR = Lerp(tonallyAdjustedR, newLuma, desaturationAmount);
+            adjustedG = Lerp(tonallyAdjustedG, newLuma, desaturationAmount);
+            adjustedB = Lerp(tonallyAdjustedB, newLuma, desaturationAmount);
+        }
+        else
+        {
+            var factor = MathF.Pow(2f, highlightsAdj * 1.75f);
+            adjustedR = r * factor;
+            adjustedG = g * factor;
+            adjustedB = b * factor;
+        }
+
+        r = Lerp(r, adjustedR, highlightMask);
+        g = Lerp(g, adjustedG, highlightMask);
+        b = Lerp(b, adjustedB, highlightMask);
+    }
+
+    private static void ApplyWhites(ref float r, ref float g, ref float b, float amount)
+    {
+        var whitesAdj = Clamp(amount, -1f, 1f);
+        if (MathF.Abs(whitesAdj) < 1e-4f)
+            return;
+
+        var whiteLevel = 1f - whitesAdj * 0.25f;
+        var scale = 1f / MathF.Max(whiteLevel, 0.01f);
         r *= scale;
         g *= scale;
         b *= scale;
+    }
+
+    private static void ApplyBlacks(ref float r, ref float g, ref float b, float amount)
+    {
+        var blacksAdj = Clamp(amount, -1f, 1f);
+        if (MathF.Abs(blacksAdj) < 1e-4f)
+            return;
+
+        var luma = GetLuma(MathF.Max(r, 0f), MathF.Max(g, 0f), MathF.Max(b, 0f));
+        var mask = 1f - Smoothstep(0f, 0.25f, luma);
+        if (mask < 1e-3f)
+            return;
+
+        var adjustment = blacksAdj * 0.75f;
+        var factor = MathF.Pow(2f, adjustment);
+
+        var adjustedR = r * factor;
+        var adjustedG = g * factor;
+        var adjustedB = b * factor;
+
+        r = Lerp(r, adjustedR, mask);
+        g = Lerp(g, adjustedG, mask);
+        b = Lerp(b, adjustedB, mask);
     }
 
     private static void ApplyAces(ref float r, ref float g, ref float b)
@@ -197,4 +283,13 @@ internal static class TonePipelineReference
 
     private static float Clamp(float value, float min, float max)
         => value < min ? min : (value > max ? max : value);
+
+    private static float Lerp(float a, float b, float t)
+        => a + (b - a) * t;
+
+    private static float TanhApprox(float x)
+    {
+        var e = MathF.Exp(2f * x);
+        return (e - 1f) / (e + 1f);
+    }
 }
