@@ -47,8 +47,10 @@ vec3 applyShadows(vec3 color, float amount) {
 }
 
 float tanhApprox(float x) {
-    float e = exp(2.0 * x);
-    return (e - 1.0) / (e + 1.0);
+    float ax = abs(x);
+    float e = exp(-2.0 * ax);
+    float t = (1.0 - e) / (1.0 + e);
+    return (x >= 0.0) ? t : -t;
 }
 
 vec3 applyHighlights(vec3 color, float amount) {
