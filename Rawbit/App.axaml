@@ -28,9 +28,17 @@
         <Color x:Key="SystemAccentColorDark2">#B96B17</Color>
         <Color x:Key="SystemAccentColorDark3">#8F520F</Color>
         <Color x:Key="AccentColor">#F29A2E</Color>
+        
+        <x:Double x:Key="SliderHorizontalHeight">10</x:Double>
+        <GridLength x:Key="SliderPreContentMargin">4</GridLength>
+        <GridLength x:Key="SliderPostContentMargin">1</GridLength>
+        <x:Double x:Key="SliderTrackThemeHeight">3</x:Double>
+        <x:Double x:Key="SliderHorizontalThumbWidth">10</x:Double>
+        <x:Double x:Key="SliderHorizontalThumbHeight">10</x:Double>
     </Application.Resources>
     <Application.Styles>
-        <FluentTheme />
+        <FluentTheme DensityStyle="Compact" />
+
         <Style Selector="Window">
             <Setter Property="Background" Value="{DynamicResource BrushBackground}" />
         </Style>
@@ -70,98 +78,29 @@
             <Setter Property="Background" Value="{DynamicResource BrushTrack}" />
             <Setter Property="Height" Value="2" />
         </Style>
-        <Style Selector="Slider">
-            <Setter Property="Height" Value="18" />
-            <Setter Property="MinHeight" Value="18" />
-            <Setter Property="Margin" Value="0,6,0,0" />
-            <Setter Property="Background" Value="{DynamicResource BrushTrack}" />
-            <Setter Property="Foreground" Value="{DynamicResource BrushAccent}" />
-        </Style>
-        <Style Selector="Slider.thin">
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Grid Margin="2,0">
-                        <Border
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="2"
-                            Height="3"
-                            VerticalAlignment="Center"
-                            x:Name="PART_TrackBar" />
-                        <Track
-                            IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
-                            Maximum="{TemplateBinding Maximum}"
-                            Minimum="{TemplateBinding Minimum}"
-                            Orientation="{TemplateBinding Orientation}"
-                            Value="{TemplateBinding Value}"
-                            x:Name="PART_Track">
-                            <Track.DecreaseButton>
-                                <RepeatButton
-                                    Background="Transparent"
-                                    IsTabStop="False"
-                                    VerticalAlignment="Center"
-                                    x:Name="PART_DecreaseButton">
-                                    <RepeatButton.Template>
-                                        <ControlTemplate>
-                                            <Border
-                                                Background="{TemplateBinding Background}"
-                                                CornerRadius="2"
-                                                Height="3"
-                                                VerticalAlignment="Center" />
-                                        </ControlTemplate>
-                                    </RepeatButton.Template>
-                                </RepeatButton>
-                            </Track.DecreaseButton>
-                            <Track.IncreaseButton>
-                                <RepeatButton
-                                    Background="Transparent"
-                                    IsTabStop="False"
-                                    VerticalAlignment="Center"
-                                    x:Name="PART_IncreaseButton">
-                                    <RepeatButton.Template>
-                                        <ControlTemplate>
-                                            <Border
-                                                Background="{TemplateBinding Background}"
-                                                CornerRadius="2"
-                                                Height="3"
-                                                VerticalAlignment="Center" />
-                                        </ControlTemplate>
-                                    </RepeatButton.Template>
-                                </RepeatButton>
-                            </Track.IncreaseButton>
-                            <Track.Thumb>
-                                <Thumb
-                                    Background="{TemplateBinding Foreground}"
-                                    BorderBrush="{DynamicResource BrushAccentBorder}"
-                                    BorderThickness="1"
-                                    Height="10"
-                                    Width="10">
-                                    <Thumb.Template>
-                                        <ControlTemplate>
-                                            <Border
-                                                Background="{TemplateBinding Background}"
-                                                BorderBrush="{TemplateBinding BorderBrush}"
-                                                BorderThickness="{TemplateBinding BorderThickness}"
-                                                CornerRadius="5" />
-                                        </ControlTemplate>
-                                    </Thumb.Template>
-                                </Thumb>
-                            </Track.Thumb>
-                        </Track>
-                    </Grid>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-        <Style Selector="Slider.thin:pressed /template/ RepeatButton#PART_DecreaseButton">
-            <Setter Property="Background" Value="{DynamicResource BrushAccentActive}" />
-        </Style>
-        <Style Selector="Slider.thin:pressed /template/ Thumb">
-            <Setter Property="Background" Value="{DynamicResource BrushAccentActive}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorDark1}" />
-        </Style>
-        <Style Selector="Slider.thin /template/ Thumb:pointerover">
-            <Setter Property="Background" Value="{DynamicResource BrushAccentActive}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorDark1}" />
-        </Style>
+        <!-- <Style Selector="Slider:horizontal"> -->
+        <!--     <Setter Property="MinWidth" Value="40" /> -->
+        <!--     <Setter Property="MaxHeight" Value="30" /> -->
+        <!--     <Setter Property="VerticalAlignment" Value="Center"></Setter> -->
+        <!-- -->
+        <!--     <Style Selector="^ Track"> -->
+        <!--         <Setter Property="VerticalAlignment" Value="Center"></Setter> -->
+        <!--         <Setter Property="Margin" Value="0"></Setter> -->
+        <!--         <Style Selector="^ RepeatButton Border"> -->
+        <!--             <Setter Property="VerticalAlignment" Value="Center"/> -->
+        <!--             <Setter Property="Height" Value="3"/> -->
+        <!--             <Setter Property="Margin" Value="0"/> -->
+        <!--         </Style> -->
+        <!--         <Style Selector="^ Thumb"> -->
+        <!--             <Setter Property="VerticalAlignment" Value="Center"></Setter> -->
+        <!-- -->
+        <!--             <Setter Property="Height" Value="18"/> -->
+        <!--             <Setter Property="Width" Value="18"/> -->
+        <!--             <Setter Property="BorderThickness" Value="3"/> -->
+        <!--         </Style> -->
+        <!--     </Style> -->
+        <!-- -->
+        <!-- </Style> -->
     </Application.Styles>
     <Application.DataTemplates>
         <DataTemplate DataType="{x:Type projectSelection:ProjectSelectionViewModel}">

@@ -47,6 +47,8 @@
 
                         <controls:LightAdjustmentsControl DataContext="{Binding LightAdjustments}" />
 
+                        <controls:WhiteBalanceControl DataContext="{Binding WhiteBalance}" />
+
                         <StackPanel Spacing="10">
                             <TextBlock
                                 Classes="muted"
@@ -64,6 +66,7 @@
             </Border>
         </Grid>
         <ListBox
+            x:Name="ThumbnailsList"
             Background="{StaticResource BrushBackground}"
             Grid.Row="1"
             ItemsSource="{Binding FolderThumbnails}"

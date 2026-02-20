@@ -47,8 +47,8 @@ public class ToneShaderTests
         using var image = SKImage.FromBitmap(src);
 
         // WHEN exposure is increased
-        using var neutral = RenderWithTone(image, exposure: 0f, shadows: 0f, highlights: 0f);
-        using var brighter = RenderWithTone(image, exposure: 1f, shadows: 0f, highlights: 0f);
+        using var neutral = RenderWithTone(image, exposure: 0f, shadows: 0f, highlights: 0f, whites: 0f);
+        using var brighter = RenderWithTone(image, exposure: 1f, shadows: 0f, highlights: 0f, whites: 0f);
 
         var lumaNeutral = Luma(neutral.GetPixel(0, 0));
         var lumaBrighter = Luma(brighter.GetPixel(0, 0));
@@ -67,8 +67,8 @@ public class ToneShaderTests
         using var image = SKImage.FromBitmap(src);
 
         // WHEN shadows are lifted
-        using var neutral = RenderWithTone(image, exposure: 0f, shadows: 0f, highlights: 0f);
-        using var lifted = RenderWithTone(image, exposure: 0f, shadows: 1f, highlights: 0f);
+        using var neutral = RenderWithTone(image, exposure: 0f, shadows: 0f, highlights: 0f, whites: 0f);
+        using var lifted = RenderWithTone(image, exposure: 0f, shadows: 1f, highlights: 0f, whites: 0f);
 
         var darkNeutral = Luma(neutral.GetPixel(0, 0));
         var darkLifted = Luma(lifted.GetPixel(0, 0));
@@ -94,12 +94,59 @@ public class ToneShaderTests
         const int curvePointCount = 3;
 
         // WHEN the shader renders with the curve
-        using var rendered = RenderWithTone(image, exposure: 0f, shadows: 0f, highlights: 0f, curvePoints, curvePointCount);
+        using var rendered = RenderWithTone(image, exposure: 0f, shadows: 0f, highlights: 0f, whites: 0f, blacks: 0f, curvePoints: curvePoints, curvePointCount: curvePointCount);
         var actual = rendered.GetPixel(0, 0);
 
         // THEN it should match the reference tone pipeline
-        var expected = TonePipelineReference.Apply(src.GetPixel(0, 0), 0f, 0f, 0f, PackCurve(curvePoints), curvePointCount);
+        var expected = TonePipelineReference.Apply(src.GetPixel(0, 0), 0f, 0f, 0f, 0f, 0f, PackCurve(curvePoints), curvePointCount);
         AssertColorApprox(expected, actual, tolerance: 3);
+    }
+
+    [Fact]
+    public void Highlights_NegativeReducesBrightPixelLuma()
+    {
+        using var src = new SKBitmap(1, 1, SKColorType.Rgba8888, SKAlphaType.Premul);
+        src.SetPixel(0, 0, new SKColor(240, 240, 240, 255));
+        using var image = SKImage.FromBitmap(src);
+
+        using var neutral = RenderWithTone(image, exposure: 0f, shadows: 0f, highlights: 0f, whites: 0f);
+        using var recovered = RenderWithTone(image, exposure: 0f, shadows: 0f, highlights: -1f, whites: 0f);
+
+        Assert.True(Luma(recovered.GetPixel(0, 0)) < Luma(neutral.GetPixel(0, 0)));
+    }
+
+    [Fact]
+    public void Whites_NegativeScalesLumaAcrossTones()
+    {
+        using var src = new SKBitmap(2, 1, SKColorType.Rgba8888, SKAlphaType.Premul);
+        src.SetPixel(0, 0, new SKColor(170, 170, 170, 255)); // upper-mid
+        src.SetPixel(1, 0, new SKColor(250, 250, 250, 255)); // near-white
+        using var image = SKImage.FromBitmap(src);
+
+        using var neutral = RenderWithTone(image, exposure: 0f, shadows: 0f, highlights: 0f, whites: 0f);
+        using var whitesDown = RenderWithTone(image, exposure: 0f, shadows: 0f, highlights: 0f, whites: -1f);
+
+        var upperMidRatio = Luma(whitesDown.GetPixel(0, 0)) / Math.Max(1.0f, Luma(neutral.GetPixel(0, 0)));
+        var nearWhiteRatio = Luma(whitesDown.GetPixel(1, 0)) / Math.Max(1.0f, Luma(neutral.GetPixel(1, 0)));
+
+        Assert.InRange(Math.Abs(upperMidRatio - nearWhiteRatio), 0.0, 0.08);
+    }
+
+    [Fact]
+    public void Blacks_PositiveLiftsDarkPixelsMoreThanMidtones()
+    {
+        using var src = new SKBitmap(2, 1, SKColorType.Rgba8888, SKAlphaType.Premul);
+        src.SetPixel(0, 0, new SKColor(20, 20, 20, 255)); // dark
+        src.SetPixel(1, 0, new SKColor(128, 128, 128, 255)); // mid
+        using var image = SKImage.FromBitmap(src);
+
+        using var neutral = RenderWithTone(image, exposure: 0f, shadows: 0f, highlights: 0f, whites: 0f, blacks: 0f);
+        using var lifted = RenderWithTone(image, exposure: 0f, shadows: 0f, highlights: 0f, whites: 0f, blacks: 1f);
+
+        var darkDelta = Luma(lifted.GetPixel(0, 0)) - Luma(neutral.GetPixel(0, 0));
+        var midDelta = Luma(lifted.GetPixel(1, 0)) - Luma(neutral.GetPixel(1, 0));
+
+        Assert.True(darkDelta > midDelta);
     }
 
     private static SKBitmap RenderWithTone(
@@ -107,6 +154,8 @@ public class ToneShaderTests
         float exposure,
         float shadows,
         float highlights,
+        float whites = 0f,
+        float blacks = 0f,
         float[]? curvePoints = null,
         int curvePointCount = 0,
         float[]? hslAdjustments = null)
@@ -117,6 +166,8 @@ public class ToneShaderTests
             exposure: exposure,
             shadows: shadows,
             highlights: highlights,
+            whites: whites,
+            blacks: blacks,
             curvePoints: curvePoints,
             curvePointCount: curvePointCount,
             hslAdjustments: hsl);

@@ -50,8 +50,10 @@ public class RenderingEngineToViewConnector : ICustomDrawOperation
                 (float)_vm.LightAdjustments.ExposureValue,
                 (float)_vm.LightAdjustments.ShadowsValue,
                 (float)_vm.LightAdjustments.HighlightsValue,
-                (float)_vm.LightAdjustments.TemperatureValue,
-                (float)_vm.LightAdjustments.TintValue,
+                (float)_vm.LightAdjustments.WhitesValue,
+                (float)_vm.LightAdjustments.BlacksValue,
+                (float)_vm.WhiteBalance.TemperatureValue,
+                (float)_vm.WhiteBalance.TintValue,
                 _vm.ToneCurveAdjustment.CurvePointsPacked,
                 _vm.ToneCurveAdjustment.CurvePointCount,
                 _vm.HslAdjustments.AdjustmentsPacked);

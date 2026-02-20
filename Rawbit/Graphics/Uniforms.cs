@@ -10,5 +10,7 @@ public static class Uniforms
     public const string Temperature = "temperature";
     public const string Tint = "tint";
     public static string Shadows = "shadows";
-    public static string Highlights ="highlights";
+    public static string Highlights = "highlights";
+    public const string Whites = "whites";
+    public const string Blacks = "blacks";
 }

@@ -4,7 +4,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:viewModels1="clr-namespace:Rawbit.UI.Adjustments.ViewModels">
-    <StackPanel Spacing="12">
+    <StackPanel Spacing="8">
         <TextBlock
             Classes="muted"
             FontWeight="Bold"
@@ -57,43 +57,44 @@
             </DockPanel>
             <Slider
                 Classes="thin"
-                Maximum="10"
-                Minimum="-10"
+                Maximum="1"
+                Minimum="-1"
                 Value="{Binding HighlightsValue}" />
         </StackPanel>
 
         <StackPanel>
             <DockPanel Margin="0,0,0,-4">
-                <TextBlock FontSize="12" Text="Temperature" />
+                <TextBlock FontSize="12" Text="Whites" />
                 <TextBlock
                     FontSize="12"
                     FontWeight="SemiBold"
                     Foreground="{DynamicResource BrushAccent}"
                     HorizontalAlignment="Right"
-                    Text="{Binding TemperatureValue, StringFormat={}{0:F2}}" />
+                    Text="{Binding WhitesValue, StringFormat={}{0:F2}}" />
             </DockPanel>
             <Slider
                 Classes="thin"
                 Maximum="1"
                 Minimum="-1"
-                Value="{Binding TemperatureValue}" />
+                Value="{Binding WhitesValue}" />
         </StackPanel>
 
         <StackPanel>
             <DockPanel Margin="0,0,0,-4">
-                <TextBlock FontSize="12" Text="Tint" />
+                <TextBlock FontSize="12" Text="Blacks" />
                 <TextBlock
                     FontSize="12"
                     FontWeight="SemiBold"
                     Foreground="{DynamicResource BrushAccent}"
                     HorizontalAlignment="Right"
-                    Text="{Binding TintValue, StringFormat={}{0:F2}}" />
+                    Text="{Binding BlacksValue, StringFormat={}{0:F2}}" />
             </DockPanel>
             <Slider
                 Classes="thin"
                 Maximum="1"
                 Minimum="-1"
-                Value="{Binding TintValue}" />
+                Value="{Binding BlacksValue}" />
         </StackPanel>
+
     </StackPanel>
 </UserControl>

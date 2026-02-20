@@ -22,6 +22,7 @@ public static class ServiceCollectionExtensions
             collection.AddSingleton<IViewNavigationService, ViewNavigationService>();
             collection.AddSingleton<IProjectLoaderService, ProjectLoaderService>();
             collection.AddSingleton<IRawLoaderService, RawLoaderService>();
+            collection.AddSingleton<IAdjustmentsStore, AdjustmentsStore>();
             collection.AddTransient<AdjustmentsViewModel>();
             collection.AddTransient<ProjectSelectionViewModel>();
             collection.AddTransient<MainWindowViewModel>();
