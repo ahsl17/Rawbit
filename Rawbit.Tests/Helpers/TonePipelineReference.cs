@@ -289,7 +289,9 @@ internal static class TonePipelineReference
 
     private static float TanhApprox(float x)
     {
-        var e = MathF.Exp(2f * x);
-        return (e - 1f) / (e + 1f);
+        var ax = MathF.Abs(x);
+        var e = MathF.Exp(-2f * ax);
+        var t = (1f - e) / (1f + e);
+        return x >= 0f ? t : -t;
     }
 }
