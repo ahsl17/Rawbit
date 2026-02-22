@@ -18,7 +18,7 @@ public partial class ExportViewModel : ObservableObject
     private readonly IAdjustmentsSnapshotProvider _snapshotProvider;
 
     [ObservableProperty] private string _exportDestination = string.Empty;
-    [ObservableProperty] private int _exportQuality = 90;
+    [ObservableProperty] private int _exportQuality = 100;
     [ObservableProperty] private bool _isExporting;
     [ObservableProperty] private double _exportProgress;
 
@@ -58,18 +58,18 @@ public partial class ExportViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(ExportDestination))
             return;
 
-        using var source = _snapshotProvider.GetFullResImage();
-        if (source == null)
-            return;
-
-        var state = _snapshotProvider.GetCurrentAdjustmentsStateSnapshot();
-        if (state == null)
-            return;
-
-        IsExporting = true;
-        ExportProgress = 0;
         try
         {
+            using var source = _snapshotProvider.GetFullResImage();
+            if (source == null)
+                return;
+
+            var state = _snapshotProvider.GetCurrentAdjustmentsStateSnapshot();
+            if (state == null)
+                return;
+
+            IsExporting = true;
+            ExportProgress = 0;
             var fileName = $"{Path.GetFileNameWithoutExtension(sourcePath)}.jpg";
             var progress = new Progress<double>(value => ExportProgress = value);
             await _exportService.ExportJpegAsync(

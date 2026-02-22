@@ -21,7 +21,9 @@ public sealed class ExportService : IExportService
         CancellationToken cancellationToken,
         IProgress<double>? progress = null)
     {
-        return Task.Run(() => ExportCpuTiled(source, adjustments, destinationFolder, fileName, quality, cancellationToken, progress), cancellationToken);
+        return Task.Run(
+            () => ExportCpuTiled(source, adjustments, destinationFolder, fileName, quality, cancellationToken,
+                progress), cancellationToken);
     }
 
     private void ExportCpuTiled(
@@ -80,7 +82,7 @@ public sealed class ExportService : IExportService
             {
                 var tile = grid.GetTile(index);
                 using var tileSurface = SKSurface.Create(tile.Info(exportInfo))
-                                       ?? throw new InvalidOperationException("Failed to create tile surface.");
+                                        ?? throw new InvalidOperationException("Failed to create tile surface.");
 
                 var render = new RenderSettings(
                     1f,
@@ -103,7 +105,7 @@ public sealed class ExportService : IExportService
     private static SKSurface ComposeTiles(SKImageInfo exportInfo, TileGrid grid, SKImage?[] tiles)
     {
         var exportSurface = SKSurface.Create(exportInfo)
-                           ?? throw new InvalidOperationException("Failed to create export surface.");
+                            ?? throw new InvalidOperationException("Failed to create export surface.");
         var canvas = exportSurface.Canvas;
 
         foreach (var tile in grid.EnumerateTiles())

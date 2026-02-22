@@ -22,12 +22,22 @@
                     BorderThickness="1"
                     CornerRadius="4"
                     Padding="10">
-                    <TextBlock Text="{Binding ExportDestinationDisplay}" />
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBlock
+                            FontSize="12"
+                            Text="{Binding ExportDestinationDisplay}"
+                            TextTrimming="CharacterEllipsis"
+                            VerticalAlignment="Center" />
+
+                        <Button
+                            Grid.Column="1"
+                            Command="{Binding SelectFolderCommand}"
+                            Content="Browse"
+                            VerticalAlignment="Center" />
+                    </Grid>
                 </Border>
-                <Button
-                    HorizontalAlignment="Left"
-                    Command="{Binding SelectFolderCommand}"
-                    Content="Select folder" />
+
                 <Grid ColumnDefinitions="*, Auto">
                     <TextBlock Classes="muted" FontWeight="Bold" Text="Quality" />
                     <TextBlock
@@ -40,9 +50,9 @@
                     TickFrequency="1"
                     IsSnapToTickEnabled="True"
                     Value="{Binding ExportQuality}" />
-
+                <Separator />
                 <Button
-                    HorizontalAlignment="Left"
+                    HorizontalAlignment="Center"
                     Command="{Binding ExportToJpgCommand}"
                     Content="Export JPG" />
             </StackPanel>

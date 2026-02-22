@@ -71,7 +71,6 @@
                                             Text="Tone Curve" />
 
                                         <controls:CurveEditor
-                                            TopInset="24"
                                             Height="230"
                                             Points="{Binding ToneCurveAdjustment.Points}" />
                                     </StackPanel>

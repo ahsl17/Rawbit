@@ -29,8 +29,8 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
     public WhiteBalanceViewModel WhiteBalance { get; }
     public HslAdjustmentsViewModel HslAdjustments { get; }
     public ToneCurveAdjustmentViewModel ToneCurveAdjustment { get; }
-    
-    
+
+
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private bool _isRawLoaded;
     [ObservableProperty] private double _imageWidth;
@@ -85,7 +85,7 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
             }
         }
     }
-    
+
     public ExportViewModel Export { get; }
 
     public AdjustmentsViewModel(
@@ -142,7 +142,7 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
         QueueSaveAdjustments();
         RequestRedraw?.Invoke();
     }
-    
+
     private async Task LoadImageAsync(ThumnailWithPath value)
     {
         _loadCts?.Cancel();
@@ -158,7 +158,7 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
             try
             {
                 token.ThrowIfCancellationRequested();
-                
+
                 RawImageContainer? oldContainer;
                 Dispatcher.UIThread.Post(() => IsRawLoaded = false);
                 lock (_syncLock)
@@ -168,7 +168,7 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
                 }
 
                 oldContainer?.Dispose();
-                
+
                 var newContainer = await _rawLoaderService.LoadRawImageAsync(value.Path).ConfigureAwait(false);
 
                 if (token.IsCancellationRequested || myReqId != Volatile.Read(ref _loadRequestId))
@@ -181,6 +181,7 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
                 {
                     _rawImageContainer = newContainer;
                 }
+
                 Dispatcher.UIThread.Post(() => IsRawLoaded = true);
             }
             catch
@@ -299,13 +300,17 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
 
     public string? GetSelectedImagePath() => SelectedImage?.Path;
     public SKImage? GetActiveImage() => ActiveImage;
-    
+
     public SKImage? GetFullResImage()
     {
         lock (_syncLock)
         {
             var source = _rawImageContainer?.FullRes;
-            var info = new SKImageInfo(source.Width, source.Height, source.ColorType, source.AlphaType, source.ColorSpace);
+            if (source == null)
+                throw new NullReferenceException("FullRes image is null");
+
+            var info = new SKImageInfo(source.Width, source.Height, source.ColorType, source.AlphaType,
+                source.ColorSpace);
             using var bitmap = new SKBitmap(info);
 
             if (!source.ReadPixels(info, bitmap.GetPixels(), bitmap.RowBytes, 0, 0))
