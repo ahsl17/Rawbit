@@ -1,7 +1,6 @@
 using Avalonia.Controls;
-using MainWindowViewModel = Rawbit.UI.Root.MainWindowViewModel;
 
-namespace Rawbit.UI.Views;
+namespace Rawbit.UI.Root.Views;
 
 public partial class MainWindow : Window
 {
@@ -9,5 +8,10 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = viewModel;
+    }
+
+    public MainWindow()
+    {
+        InitializeComponent();
     }
 }

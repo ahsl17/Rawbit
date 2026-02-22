@@ -12,7 +12,7 @@ namespace Rawbit.Services;
 public class RawLoaderService : IRawLoaderService
 {
     private const int ProxyLongSide = 1024; // Slightly larger for better preview quality
-    private static readonly SKColorSpace ColorSpace = SKColorSpace.CreateRgb(SKColorSpaceTransferFn.Linear, SKColorSpaceXyz.AdobeRgb);
+    // Keep raw decode untagged; color management is handled explicitly in the shader pipeline.
     
     public async Task<RawImageContainer> LoadRawImageAsync(string path)
     {
@@ -42,7 +42,7 @@ public class RawLoaderService : IRawLoaderService
         context.DcrawProcess(cfg => 
         {
             cfg.OutputBps = 16;
-            cfg.OutputColor = LibRawColorSpace.AdobeRgb; 
+            cfg.OutputColor = LibRawColorSpace.SRGB; 
             cfg.UseCameraWb = true;
             cfg.NoAutoBright = true; 
             cfg.AutoScale = true;
@@ -60,12 +60,10 @@ public class RawLoaderService : IRawLoaderService
 
         // Use AdobeRgb linear space to match the LibRaw output
         var info = new SKImageInfo(
-            image.Width, 
-            image.Height, 
-            SKColorType.RgbaF16, 
-            SKAlphaType.Premul,
-            ColorSpace
-            ); 
+            image.Width,
+            image.Height,
+            SKColorType.RgbaF16,
+            SKAlphaType.Premul);
 
         var bitmap = new SKBitmap(info);
 

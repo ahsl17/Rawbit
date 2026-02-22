@@ -1,7 +1,6 @@
 <Application
     x:Class="Rawbit.App"
     xmlns="https://github.com/avaloniaui"
-    xmlns:views1="clr-namespace:Rawbit.UI.Views"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:projectSelection="clr-namespace:Rawbit.UI.ProjectSelection"
     xmlns:viewModels1="clr-namespace:Rawbit.UI.Adjustments.ViewModels"
@@ -9,8 +8,10 @@
     <Application.Resources>
         <SolidColorBrush Color="#171717" x:Key="BrushBackground" />
         <SolidColorBrush Color="#0f0f0f" x:Key="BrushCanvas" />
-        <SolidColorBrush Color="#232323" x:Key="BrushPanel" />
+        <SolidColorBrush Color="#151515" x:Key="BrushPanel" />
         <SolidColorBrush Color="#363636" x:Key="BrushBorder" />
+        <SolidColorBrush Color="#2B2B2B" x:Key="BrushPanelBorder" />
+        <SolidColorBrush Color="#1E1E1E" x:Key="BrushPanelBright" />
         <SolidColorBrush Color="#d6d6d6" x:Key="BrushTextPrimary" />
         <SolidColorBrush Color="#8a8a8a" x:Key="BrushTextMuted" />
         <SolidColorBrush Color="#a8a8a8" x:Key="BrushAccent" />

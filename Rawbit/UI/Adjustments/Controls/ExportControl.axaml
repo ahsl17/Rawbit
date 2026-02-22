@@ -1,0 +1,78 @@
+<UserControl
+    x:Class="Rawbit.UI.Adjustments.Controls.ExportControl"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModels="clr-namespace:Rawbit.UI.Adjustments.ViewModels"
+    x:DataType="viewModels:ExportViewModel">
+    <Grid RowDefinitions="Auto, Auto, Auto" RowSpacing="16">
+
+        <Border
+            Background="{DynamicResource BrushPanelBright}"
+            BorderBrush="{DynamicResource BrushPanelBorder}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Margin="0,10,0,0"
+            Grid.Row="0"
+            Padding="4">
+            <StackPanel Spacing="8">
+                <TextBlock Classes="muted" FontWeight="Bold" Text="Destination" />
+                <Border
+                    Background="{StaticResource BrushPanelBright}"
+                    BorderBrush="{DynamicResource BrushPanelBorder}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="10">
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBlock
+                            FontSize="12"
+                            Text="{Binding ExportDestinationDisplay}"
+                            TextTrimming="CharacterEllipsis"
+                            VerticalAlignment="Center" />
+
+                        <Button
+                            Grid.Column="1"
+                            Command="{Binding SelectFolderCommand}"
+                            Content="Browse"
+                            VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBlock Classes="muted" FontWeight="Bold" Text="Quality" />
+                    <TextBlock
+                        Grid.Column="1"
+                        Text="{Binding ExportQuality, StringFormat={}{0:0}}" />
+                </Grid>
+                <Slider
+                    Minimum="10"
+                    Maximum="100"
+                    TickFrequency="1"
+                    IsSnapToTickEnabled="True"
+                    Value="{Binding ExportQuality}" />
+                <Separator />
+                <Button
+                    HorizontalAlignment="Center"
+                    Command="{Binding ExportToJpgCommand}"
+                    Content="Export JPG" />
+            </StackPanel>
+        </Border>
+        <Border
+            Grid.Row="2"
+            Background="{DynamicResource BrushPanelBright}"
+            BorderBrush="{DynamicResource BrushPanelBorder}"
+            BorderThickness="1"
+            CornerRadius="6"
+            IsVisible="{Binding IsExporting}"
+            Padding="8">
+            <StackPanel Spacing="6">
+                <TextBlock Classes="muted" Text="Exporting..." />
+                <ProgressBar
+                    IsIndeterminate="False"
+                    Maximum="1"
+                    Value="{Binding ExportProgress}"
+                    Width="200" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

@@ -12,10 +12,10 @@ namespace Rawbit.UI.Adjustments.Controls;
 
 public class CurveEditor : Control
 {
-    private const double Padding = 10;
+    private const double Padding = 6;
     private const double HandleRadius = 5;
     private const double MinGap = 0.02;
-    public const int MaxPoints = 8;
+    private const int MaxPoints = 8;
 
     public static readonly StyledProperty<IList<CurvePoint>> PointsProperty =
         AvaloniaProperty.Register<CurveEditor, IList<CurvePoint>>(
@@ -27,6 +27,7 @@ public class CurveEditor : Control
         get => GetValue(PointsProperty);
         set => SetValue(PointsProperty, value);
     }
+
 
     private DragHandle _dragging = DragHandle.None;
     private int _dragIndex = -1;
@@ -73,7 +74,7 @@ public class CurveEditor : Control
 
         var plot = GetPlotRect();
         var background = TryGetBrush("BrushPanel") ?? Brushes.Black;
-        var border = TryGetBrush("BrushBorder") ?? Brushes.Gray;
+        var border = TryGetBrush("BrushPanelBorder") ?? TryGetBrush("BrushBorder") ?? Brushes.Gray;
         var accent = TryGetBrush("BrushAccentActive") ?? Brushes.Orange;
         var muted = TryGetBrush("BrushTextMuted") ?? Brushes.Gray;
 
@@ -225,7 +226,8 @@ public class CurveEditor : Control
         var rect = Bounds.Deflate(Padding);
         var size = Math.Min(rect.Width, rect.Height);
         var left = rect.Left + (rect.Width - size) / 2;
-        var top = rect.Top + (rect.Height - size) / 2;
+        // potential issue here, may clip value sneakily
+        var top = rect.Top - 24;
         return new Rect(left, top, size, size);
     }
 

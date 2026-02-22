@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using Rawbit.Models;
 
 namespace Rawbit.Graphics;
 
@@ -14,6 +16,24 @@ public sealed record ShaderSettings(
     int CurvePointCount,
     float[] HslAdjustments)
 {
+    public static ShaderSettings From(AdjustmentsState state, bool cloneArrays = true)
+    {
+        var curve = cloneArrays ? state.CurvePoints.ToArray() : state.CurvePoints;
+        var hsl = cloneArrays ? state.Hsl.ToArray() : state.Hsl;
+
+        return new ShaderSettings(
+            state.Exposure,
+            state.Shadows,
+            state.Highlights,
+            state.Whites,
+            state.Blacks,
+            state.Temperature,
+            state.Tint,
+            curve,
+            state.CurvePointCount,
+            hsl);
+    }
+
     public int ComputeHash()
     {
         unchecked

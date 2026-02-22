@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.Threading;
+using Avalonia;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -16,6 +17,7 @@ public class RenderingEngineToViewConnector : ICustomDrawOperation
     private readonly float _zoom;
     private readonly Vector _pan;
     private readonly SKImage? _imageOverride;
+    private readonly Lock _renderingLock = new();
     public Rect Bounds { get; }
 
     public RenderingEngineToViewConnector(
@@ -27,10 +29,10 @@ public class RenderingEngineToViewConnector : ICustomDrawOperation
         SKImage? imageOverride)
     {
         _vm = vm;
-        _engine = engine;
         Bounds = bounds;
         _zoom = zoom;
         _pan = pan;
+        _engine = engine;
         _imageOverride = imageOverride;
     }
 
@@ -46,17 +48,8 @@ public class RenderingEngineToViewConnector : ICustomDrawOperation
         var image = _imageOverride ?? _vm.ActiveImage;
         if (image != null)
         {
-            var shader = new ShaderSettings(
-                (float)_vm.LightAdjustments.ExposureValue,
-                (float)_vm.LightAdjustments.ShadowsValue,
-                (float)_vm.LightAdjustments.HighlightsValue,
-                (float)_vm.LightAdjustments.WhitesValue,
-                (float)_vm.LightAdjustments.BlacksValue,
-                (float)_vm.WhiteBalance.TemperatureValue,
-                (float)_vm.WhiteBalance.TintValue,
-                _vm.ToneCurveAdjustment.CurvePointsPacked,
-                _vm.ToneCurveAdjustment.CurvePointCount,
-                _vm.HslAdjustments.AdjustmentsPacked);
+            var state = _vm.GetCurrentAdjustmentsState(snapshotArrays: false);
+            var shader = ShaderSettings.From(state, cloneArrays: false);
 
             var render = new RenderSettings(
                 _zoom,

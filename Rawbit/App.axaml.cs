@@ -7,7 +7,7 @@
     using Microsoft.Extensions.DependencyInjection;
     using Rawbit.Services;
     using Rawbit.Services.Interfaces;
-    using MainWindow = Rawbit.UI.Views.MainWindow;
+    using MainWindow = Rawbit.UI.Root.Views.MainWindow;
     using MainWindowViewModel = Rawbit.UI.Root.MainWindowViewModel;
 
     namespace Rawbit;
@@ -33,7 +33,6 @@
             ((ViewNavigationService)navigationService).MainWindowViewModel = vm;
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                // todo proper DI and navigation
                 desktop.MainWindow = new MainWindow(vm);
             }
 
