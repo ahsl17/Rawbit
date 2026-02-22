@@ -33,7 +33,6 @@
             ((ViewNavigationService)navigationService).MainWindowViewModel = vm;
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                // todo proper DI and navigation
                 desktop.MainWindow = new MainWindow(vm);
             }
 

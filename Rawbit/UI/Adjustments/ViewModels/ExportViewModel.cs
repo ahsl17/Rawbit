@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -19,6 +20,7 @@ public partial class ExportViewModel : ObservableObject
     [ObservableProperty] private string _exportDestination = string.Empty;
     [ObservableProperty] private int _exportQuality = 90;
     [ObservableProperty] private bool _isExporting;
+    [ObservableProperty] private double _exportProgress;
 
     public ExportViewModel(IExportService exportService, IAdjustmentsSnapshotProvider snapshotProvider)
     {
@@ -56,8 +58,8 @@ public partial class ExportViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(ExportDestination))
             return;
 
-        var container = _snapshotProvider.GetCurrentImageContainer();
-        if (container == null)
+        var source = _snapshotProvider.GetFullResImage();
+        if (source == null)
             return;
 
         var state = _snapshotProvider.GetCurrentAdjustmentsStateSnapshot();
@@ -65,21 +67,24 @@ public partial class ExportViewModel : ObservableObject
             return;
 
         IsExporting = true;
+        ExportProgress = 0;
         try
         {
             var fileName = $"{Path.GetFileNameWithoutExtension(sourcePath)}.jpg";
+            var progress = new Progress<double>(value => ExportProgress = value);
             await _exportService.ExportJpegAsync(
-                container,
+                source,
                 state,
                 ExportDestination,
                 fileName,
                 ExportQuality,
-                CancellationToken.None).ConfigureAwait(false);
+                CancellationToken.None,
+                progress).ConfigureAwait(false);
         }
         finally
         {
             Dispatcher.UIThread.Post(() => IsExporting = false);
-
+            Dispatcher.UIThread.Post(() => ExportProgress = 0);
         }
     }
 }

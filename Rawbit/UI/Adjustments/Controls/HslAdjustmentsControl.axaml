@@ -4,89 +4,96 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:viewModels1="clr-namespace:Rawbit.UI.Adjustments.ViewModels">
-    <StackPanel Spacing="10">
-        <TextBlock
-            Classes="muted"
-            FontWeight="Bold"
-            Margin="0,6,0,2"
-            Text="HSL" />
-        <ItemsControl ItemsSource="{Binding AdjustmentsViewModels}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <UniformGrid Rows="1" Background="Transparent" Height="20" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.Styles>
-                <Style Selector="ToggleButton">
-                    <Setter Property="Background" Value="Transparent" />
-                    <Setter Property="BorderThickness" Value="0" />
-                    <Setter Property="CornerRadius" Value="6"></Setter>
-                    <Setter Property="Padding" Value="0" />
-                </Style>
-                <Style Selector="ToggleButton:checked Border.hsl-swatch">
-                    <Setter Property="Background" Value="Orange" />
-                </Style>
-            </ItemsControl.Styles>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="viewModels1:HslColorAdjustmentViewModel">
-                    <ToggleButton IsChecked="{Binding IsSelected}">
-                        <Border Classes="hsl-swatch" Background="Transparent" BorderBrush="{Binding SwatchBrush}"
-                                BorderThickness="3" Width="20" Height="20" CornerRadius="4" />
-                    </ToggleButton>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        <StackPanel Spacing="4" Margin="0,0,0,8">
-            <StackPanel>
-                <DockPanel Margin="0,0,0,-4">
-                    <TextBlock FontSize="12" Text="Hue" />
-                    <TextBlock
-                        FontSize="12"
-                        FontWeight="SemiBold"
-                        Foreground="{DynamicResource BrushAccent}"
-                        HorizontalAlignment="Right"
-                        Text="{Binding DisplayedHslColorAdjustment.Hue, StringFormat={}{0:F0}}" />
-                </DockPanel>
-                <Slider
-                    Classes="thin"
-                    Maximum="100"
-                    Minimum="-100"
-                    Value="{Binding DisplayedHslColorAdjustment.Hue}" />
-            </StackPanel>
+    <Border
+        Background="{DynamicResource BrushPanelBright}"
+        BorderBrush="{DynamicResource BrushPanelBorder}"
+        BorderThickness="1"
+        CornerRadius="8"
+        Margin="0,10,0,0"
+        Padding="8">
+        <StackPanel Spacing="6">
+            <TextBlock
+                Classes="muted"
+                FontWeight="Bold"
+                Text="Hsl" />
+            <ItemsControl ItemsSource="{Binding AdjustmentsViewModels}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Rows="1" Background="Transparent" Height="20" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.Styles>
+                    <Style Selector="ToggleButton">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="CornerRadius" Value="6"></Setter>
+                        <Setter Property="Padding" Value="0" />
+                    </Style>
+                    <Style Selector="ToggleButton:checked Border.hsl-swatch">
+                        <Setter Property="Background" Value="Orange" />
+                    </Style>
+                </ItemsControl.Styles>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels1:HslColorAdjustmentViewModel">
+                        <ToggleButton IsChecked="{Binding IsSelected}">
+                            <Border Classes="hsl-swatch" Background="Transparent" BorderBrush="{Binding SwatchBrush}"
+                                    BorderThickness="3" Width="20" Height="20" CornerRadius="4" />
+                        </ToggleButton>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <StackPanel Spacing="4" Margin="0,0,0,8">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,-4">
+                        <TextBlock FontSize="12" Text="Hue" />
+                        <TextBlock
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource BrushAccent}"
+                            HorizontalAlignment="Right"
+                            Text="{Binding DisplayedHslColorAdjustment.Hue, StringFormat={}{0:F0}}" />
+                    </DockPanel>
+                    <Slider
+                        Classes="thin"
+                        Maximum="100"
+                        Minimum="-100"
+                        Value="{Binding DisplayedHslColorAdjustment.Hue}" />
+                </StackPanel>
 
-            <StackPanel>
-                <DockPanel Margin="0,0,0,-4">
-                    <TextBlock FontSize="12" Text="Saturation" />
-                    <TextBlock
-                        FontSize="12"
-                        FontWeight="SemiBold"
-                        Foreground="{DynamicResource BrushAccent}"
-                        HorizontalAlignment="Right"
-                        Text="{Binding DisplayedHslColorAdjustment.Saturation, StringFormat={}{0:F0}}" />
-                </DockPanel>
-                <Slider
-                    Classes="thin"
-                    Maximum="100"
-                    Minimum="-100"
-                    Value="{Binding DisplayedHslColorAdjustment.Saturation}" />
-            </StackPanel>
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,-4">
+                        <TextBlock FontSize="12" Text="Saturation" />
+                        <TextBlock
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource BrushAccent}"
+                            HorizontalAlignment="Right"
+                            Text="{Binding DisplayedHslColorAdjustment.Saturation, StringFormat={}{0:F0}}" />
+                    </DockPanel>
+                    <Slider
+                        Classes="thin"
+                        Maximum="100"
+                        Minimum="-100"
+                        Value="{Binding DisplayedHslColorAdjustment.Saturation}" />
+                </StackPanel>
 
-            <StackPanel>
-                <DockPanel Margin="0,0,0,-4">
-                    <TextBlock FontSize="12" Text="Luminance" />
-                    <TextBlock
-                        FontSize="12"
-                        FontWeight="SemiBold"
-                        Foreground="{DynamicResource BrushAccent}"
-                        HorizontalAlignment="Right"
-                        Text="{Binding DisplayedHslColorAdjustment.Luminance, StringFormat={}{0:F0}}" />
-                </DockPanel>
-                <Slider
-                    Classes="thin"
-                    Maximum="100"
-                    Minimum="-100"
-                    Value="{Binding DisplayedHslColorAdjustment.Luminance}" />
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,-4">
+                        <TextBlock FontSize="12" Text="Luminance" />
+                        <TextBlock
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource BrushAccent}"
+                            HorizontalAlignment="Right"
+                            Text="{Binding DisplayedHslColorAdjustment.Luminance, StringFormat={}{0:F0}}" />
+                    </DockPanel>
+                    <Slider
+                        Classes="thin"
+                        Maximum="100"
+                        Minimum="-100"
+                        Value="{Binding DisplayedHslColorAdjustment.Luminance}" />
+                </StackPanel>
             </StackPanel>
         </StackPanel>
-    </StackPanel>
+    </Border>
 </UserControl>

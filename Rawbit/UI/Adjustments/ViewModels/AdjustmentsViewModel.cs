@@ -298,6 +298,14 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
     }
 
     public string? GetSelectedImagePath() => SelectedImage?.Path;
+    public SKImage? GetActiveImage() => ActiveImage;
+    public SKImage? GetFullResImage()
+    {
+        lock (_syncLock)
+        {
+            return _rawImageContainer?.FullRes;
+        }
+    }
 
     public AdjustmentsState GetCurrentAdjustmentsState(bool snapshotArrays)
     {

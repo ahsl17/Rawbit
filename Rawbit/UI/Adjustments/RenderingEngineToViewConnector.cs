@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.Threading;
+using Avalonia;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -16,6 +17,7 @@ public class RenderingEngineToViewConnector : ICustomDrawOperation
     private readonly float _zoom;
     private readonly Vector _pan;
     private readonly SKImage? _imageOverride;
+    private readonly Lock _renderingLock = new();
     public Rect Bounds { get; }
 
     public RenderingEngineToViewConnector(
@@ -27,10 +29,10 @@ public class RenderingEngineToViewConnector : ICustomDrawOperation
         SKImage? imageOverride)
     {
         _vm = vm;
-        _engine = engine;
         Bounds = bounds;
         _zoom = zoom;
         _pan = pan;
+        _engine = engine;
         _imageOverride = imageOverride;
     }
 

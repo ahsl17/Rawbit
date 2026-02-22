@@ -12,7 +12,6 @@ namespace Rawbit.UI.Adjustments.Controls;
 
 public class RawPreviewControl : Control
 {
-    private readonly RawRenderingEngine _engine = new();
     private const float MinZoom = 0.1f;
     private const float MaxZoom = 8f;
     private float _zoom = 1f;
@@ -22,6 +21,7 @@ public class RawPreviewControl : Control
     private readonly DispatcherTimer _zoomDebounceTimer;
     private bool _pointerPressed;
     private Point _lastPointerPosition;
+    private readonly RawRenderingEngine _engine = new();
 
     public static readonly StyledProperty<AdjustmentsViewModel> ViewModelProperty =
         AvaloniaProperty.Register<RawPreviewControl, AdjustmentsViewModel>(nameof(ViewModel));
@@ -38,7 +38,7 @@ public class RawPreviewControl : Control
         PointerReleased += StopMoving;
         PointerPressed += MarkReadyForMoving;
         PointerMoved += MoveInImage;
-        
+
         // Timer to handle switching back from ProxyImage to High-Res after zooming stops
         _zoomDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(120) };
         _zoomDebounceTimer.Tick += (_, _) =>
@@ -58,6 +58,7 @@ public class RawPreviewControl : Control
                 _pointerPressed = false;
                 return;
             }
+
             var pointer = e.GetPosition(this);
             var delta = pointer - _lastPointerPosition;
             _lastPointerPosition = pointer;
@@ -88,6 +89,9 @@ public class RawPreviewControl : Control
 
     public override void Render(DrawingContext context)
     {
+        if (ViewModel?.Export?.IsExporting == true)
+            return;
+
         var container = ViewModel.CurrentContainer;
         if (!ReferenceEquals(_lastContainer, container))
         {
