@@ -38,31 +38,155 @@
                 BorderThickness="0,0,1,0"
                 Grid.Column="1"
                 Padding="20">
-                <ScrollViewer
-                    HorizontalScrollBarVisibility="Disabled"
-                    Padding="0,0,20,0"
-                    VerticalScrollBarVisibility="Auto">
-                    <StackPanel Spacing="25">
-                        <TextBlock Classes="section" Text="IMAGE ADJUSTMENTS" />
+                <TabControl>
+                    <TabItem>
+                        <TabItem.Header>
+                            <Border Padding="6">
+                                <Path
+                                    Data="M2,14 L12,4 L14,6 L4,16 Z M2,14 L2,16 L4,16 Z"
+                                    Fill="{DynamicResource BrushTextPrimary}"
+                                    Height="16"
+                                    Stretch="Uniform"
+                                    Width="16" />
+                            </Border>
+                        </TabItem.Header>
+                        <ScrollViewer
+                            HorizontalScrollBarVisibility="Disabled"
+                            Padding="0,0,20,0"
+                            VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="25">
+                                <controls:LightAdjustmentsControl DataContext="{Binding LightAdjustments}" />
 
-                        <controls:LightAdjustmentsControl DataContext="{Binding LightAdjustments}" />
+                                <controls:WhiteBalanceControl DataContext="{Binding WhiteBalance}" />
 
-                        <controls:WhiteBalanceControl DataContext="{Binding WhiteBalance}" />
+                                <StackPanel Spacing="10">
+                                    <TextBlock
+                                        Classes="muted"
+                                        FontWeight="Bold"
+                                        Margin="0,6,0,2"
+                                        Text="TONE CURVE" />
+                                    <controls:CurveEditor Height="250" Points="{Binding ToneCurveAdjustment.Points}" />
+                                </StackPanel>
+                                
+                                <Separator />
 
-                        <StackPanel Spacing="10">
-                            <TextBlock
-                                Classes="muted"
-                                FontWeight="Bold"
-                                Margin="0,6,0,2"
-                                Text="TONE CURVE" />
-                            <controls:CurveEditor Height="250" Points="{Binding ToneCurveAdjustment.Points}" />
-                        </StackPanel>
-                        
-                        <Separator />
+                                <controls:HslAdjustmentsControl DataContext="{Binding HslAdjustments}" />
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+                    <TabItem>
+                        <TabItem.Header>
+                            <Border Padding="6">
+                                <Grid Height="16" Width="16">
+                                    <Ellipse
+                                        Stroke="{DynamicResource BrushTextPrimary}"
+                                        StrokeThickness="1.5" />
+                                    <TextBlock
+                                        FontSize="10"
+                                        FontWeight="Bold"
+                                        HorizontalAlignment="Center"
+                                        Text="?"
+                                        VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+                        </TabItem.Header>
+                    </TabItem>
+                    <TabItem>
+                        <TabItem.Header>
+                            <Border Padding="6">
+                                <Grid Height="16" Width="16">
+                                    <Border
+                                        BorderBrush="{DynamicResource BrushTextPrimary}"
+                                        BorderThickness="1.5"
+                                        CornerRadius="1" />
+                                    <Rectangle
+                                        Fill="{DynamicResource BrushTextPrimary}"
+                                        Height="4"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,2,0,0"
+                                        VerticalAlignment="Top"
+                                        Width="8" />
+                                    <Rectangle
+                                        Stroke="{DynamicResource BrushTextPrimary}"
+                                        StrokeThickness="1.2"
+                                        Height="5"
+                                        HorizontalAlignment="Left"
+                                        Margin="2,7,0,0"
+                                        VerticalAlignment="Top"
+                                        Width="5" />
+                                </Grid>
+                            </Border>
+                        </TabItem.Header>
+                        <Grid RowDefinitions="Auto, *" RowSpacing="16">
+                            <StackPanel Spacing="6">
+                                <TextBlock Classes="section" Text="EXPORT" />
+                                <TextBlock
+                                    Classes="muted"
+                                    Text="Export the current image with your adjustments applied." />
+                            </StackPanel>
 
-                        <controls:HslAdjustmentsControl DataContext="{Binding HslAdjustments}" />
-                    </StackPanel>
-                </ScrollViewer>
+                            <Border
+                                Background="{DynamicResource BrushBackground}"
+                                BorderBrush="{DynamicResource BrushBorder}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Grid.Row="1"
+                                Padding="16">
+                                <StackPanel Spacing="16">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Classes="muted" FontWeight="Bold" Text="DESTINATION" />
+                                        <Border
+                                            Background="{DynamicResource BrushPanel}"
+                                            BorderBrush="{DynamicResource BrushBorder}"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="10">
+                                            <TextBlock Text="{Binding Export.ExportDestinationDisplay}" />
+                                        </Border>
+                                        <Button
+                                            HorizontalAlignment="Left"
+                                            Command="{Binding Export.SelectFolderCommand}"
+                                            Content="Select destination folder" />
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="8">
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <TextBlock Classes="muted" FontWeight="Bold" Text="QUALITY" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                Text="{Binding Export.ExportQuality, StringFormat={}{0:0}}" />
+                                        </Grid>
+                                        <Slider
+                                            Minimum="10"
+                                            Maximum="100"
+                                            TickFrequency="1"
+                                            IsSnapToTickEnabled="True"
+                                            Value="{Binding Export.ExportQuality}" />
+                                    </StackPanel>
+
+                                    <Button
+                                        HorizontalAlignment="Left"
+                                        Command="{Binding Export.ExportToJpgCommand}"
+                                        Content="Export JPG" />
+
+                                    <!-- <StackPanel -->
+                                    <!--     IsVisible="{Binding Export.IsExporting}" -->
+                                    <!--     Orientation="Horizontal" -->
+                                    <!--     Spacing="8" -->
+                                    <!--     VerticalAlignment="Center"> -->
+                                    <!--     <ProgressBar -->
+                                    <!--         Width="80" -->
+                                    <!--         IsIndeterminate="True" -->
+                                    <!--         VerticalAlignment="Center" /> -->
+                                    <!--     <TextBlock -->
+                                    <!--         Classes="muted" -->
+                                    <!--         Text="Exporting..." /> -->
+                                    <!-- </StackPanel> -->
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
             </Border>
         </Grid>
         <ListBox
@@ -75,7 +199,8 @@
             SelectionMode="Single">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" />
+                    <VirtualizingStackPanel
+                        Orientation="Horizontal"/>
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>

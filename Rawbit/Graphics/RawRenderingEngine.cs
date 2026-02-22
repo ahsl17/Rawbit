@@ -32,7 +32,7 @@ public class RawRenderingEngine : IDisposable
         // Calculate uniform scaling (fit image to screen)
         var safeZoom = request.Render.Zoom;
         if (safeZoom <= 0f || float.IsNaN(safeZoom) || float.IsInfinity(safeZoom))
-            safeZoom = 1f;
+            safeZoom = 1f; 
         var destRect = request.Render.DestRect;
         float scale = Math.Min(destRect.Width / source.Width, destRect.Height / source.Height) * safeZoom;
         float x = (destRect.Width - source.Width * scale) / 2 + request.Render.Pan.X;

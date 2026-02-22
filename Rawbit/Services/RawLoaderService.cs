@@ -110,7 +110,7 @@ public class RawLoaderService : IRawLoaderService
             w = (int)(ProxyLongSide * ratio);
         }
 
-        var info = new SKImageInfo(w, h, SKColorType.RgbaF16, SKAlphaType.Premul);
+        var info = new SKImageInfo(w, h, SKColorType.RgbaF16, SKAlphaType.Premul, ColorSpace);
         var proxy = new SKBitmap(info);
 
         // Linear filtering is important for avoiding moiré in proxies

@@ -3,7 +3,7 @@
     Title="Rawbit"
     Width="1200"
     WindowStartupLocation="CenterScreen"
-    x:Class="Rawbit.UI.Views.MainWindow"
+    x:Class="Rawbit.UI.Root.Views.MainWindow"
     x:DataType="root:MainWindowViewModel"
     Icon="/Assets/logo.png"
     xmlns="https://github.com/avaloniaui"

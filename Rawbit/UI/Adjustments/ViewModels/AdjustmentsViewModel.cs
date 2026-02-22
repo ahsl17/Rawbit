@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -7,12 +8,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Rawbit.Models;
 using Rawbit.Services;
 using Rawbit.Services.Interfaces;
+using Rawbit.UI.Adjustments.Interfaces;
 using Rawbit.UI.Root.Interfaces;
 using SkiaSharp;
 
 namespace Rawbit.UI.Adjustments.ViewModels;
 
-public partial class AdjustmentsViewModel : ObservableObject, INavigableViewModel
+public partial class AdjustmentsViewModel : ObservableObject, INavigableViewModel, IAdjustmentsSnapshotProvider
 {
     private readonly Lock _syncLock = new();
 
@@ -84,7 +86,12 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
         }
     }
     
-    public AdjustmentsViewModel(IRawLoaderService rawLoaderService, IAdjustmentsStore adjustmentsStore)
+    public ExportViewModel Export { get; }
+
+    public AdjustmentsViewModel(
+        IRawLoaderService rawLoaderService,
+        IAdjustmentsStore adjustmentsStore,
+        IExportService exportService)
     {
         _rawLoaderService = rawLoaderService;
         _adjustmentsStore = adjustmentsStore;
@@ -96,8 +103,8 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
         WhiteBalance.AdjustmentsChanged += AdjustAndRedraw;
         HslAdjustments.AdjustmentsChanged += AdjustAndRedraw;
         ToneCurveAdjustment.AdjustmentsChanged += AdjustAndRedraw;
+        Export = new ExportViewModel(exportService, this);
     }
-
 
     partial void OnSelectedImageChanged(ThumnailWithPath? value)
     {
@@ -274,7 +281,35 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
         if (string.IsNullOrWhiteSpace(imagePath))
             return;
 
-        var state = new AdjustmentsState(
+        var state = GetCurrentAdjustmentsState(snapshotArrays: true);
+
+        await _adjustmentsStore.SaveAsync(imagePath, state).ConfigureAwait(false);
+    }
+
+    public AdjustmentsState GetCurrentAdjustmentsStateSnapshot() =>
+        GetCurrentAdjustmentsState(snapshotArrays: true);
+
+    public RawImageContainer? GetCurrentImageContainer()
+    {
+        lock (_syncLock)
+        {
+            return _rawImageContainer;
+        }
+    }
+
+    public string? GetSelectedImagePath() => SelectedImage?.Path;
+
+    public AdjustmentsState GetCurrentAdjustmentsState(bool snapshotArrays)
+    {
+        var hsl = snapshotArrays
+            ? HslAdjustments.AdjustmentsPacked.ToArray()
+            : HslAdjustments.AdjustmentsPacked;
+
+        var curve = snapshotArrays
+            ? ToneCurveAdjustment.CurvePointsPacked.ToArray()
+            : ToneCurveAdjustment.CurvePointsPacked;
+
+        return new AdjustmentsState(
             (float)LightAdjustments.ExposureValue,
             (float)LightAdjustments.ShadowsValue,
             (float)LightAdjustments.HighlightsValue,
@@ -282,10 +317,8 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
             (float)LightAdjustments.BlacksValue,
             (float)WhiteBalance.TemperatureValue,
             (float)WhiteBalance.TintValue,
-            HslAdjustments.AdjustmentsPacked,
-            ToneCurveAdjustment.CurvePointsPacked,
+            hsl,
+            curve,
             ToneCurveAdjustment.CurvePointCount);
-
-        await _adjustmentsStore.SaveAsync(imagePath, state).ConfigureAwait(false);
     }
 }

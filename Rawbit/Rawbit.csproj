@@ -59,10 +59,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <AdditionalFiles Include="UI\Views\MainWindow.axaml" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Compile Update="UI\Adjustments\Controls\HslAdjustmentsControl.axaml.cs">
         <DependentUpon>HslAdjustmentsControl.axaml</DependentUpon>
         <SubType>Code</SubType>

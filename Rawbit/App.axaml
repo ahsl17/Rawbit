@@ -1,7 +1,6 @@
 <Application
     x:Class="Rawbit.App"
     xmlns="https://github.com/avaloniaui"
-    xmlns:views1="clr-namespace:Rawbit.UI.Views"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:projectSelection="clr-namespace:Rawbit.UI.ProjectSelection"
     xmlns:viewModels1="clr-namespace:Rawbit.UI.Adjustments.ViewModels"
