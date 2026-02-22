@@ -299,11 +299,19 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
 
     public string? GetSelectedImagePath() => SelectedImage?.Path;
     public SKImage? GetActiveImage() => ActiveImage;
+    
     public SKImage? GetFullResImage()
     {
         lock (_syncLock)
         {
-            return _rawImageContainer?.FullRes;
+            var source = _rawImageContainer?.FullRes;
+            var info = new SKImageInfo(source.Width, source.Height, source.ColorType, source.AlphaType, source.ColorSpace);
+            using var bitmap = new SKBitmap(info);
+
+            if (!source.ReadPixels(info, bitmap.GetPixels(), bitmap.RowBytes, 0, 0))
+                return null;
+
+            return SKImage.FromBitmap(bitmap);
         }
     }
 

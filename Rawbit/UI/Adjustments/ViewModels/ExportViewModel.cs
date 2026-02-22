@@ -58,7 +58,7 @@ public partial class ExportViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(ExportDestination))
             return;
 
-        var source = _snapshotProvider.GetFullResImage();
+        using var source = _snapshotProvider.GetFullResImage();
         if (source == null)
             return;
 

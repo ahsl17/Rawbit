@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - "**"
+  pull_request:
+
 jobs:
   unit_tests:
     runs-on: ubuntu-latest

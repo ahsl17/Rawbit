@@ -15,7 +15,10 @@ public class CurveEditor : Control
     private const double Padding = 6;
     private const double HandleRadius = 5;
     private const double MinGap = 0.02;
-    public const int MaxPoints = 8;
+    private const int MaxPoints = 8;
+
+    private static readonly StyledProperty<double> TopInsetProperty =
+        AvaloniaProperty.Register<CurveEditor, double>(nameof(TopInset), -24);
 
     public static readonly StyledProperty<IList<CurvePoint>> PointsProperty =
         AvaloniaProperty.Register<CurveEditor, IList<CurvePoint>>(
@@ -28,6 +31,12 @@ public class CurveEditor : Control
         set => SetValue(PointsProperty, value);
     }
 
+    public double TopInset
+    {
+        get => GetValue(TopInsetProperty);
+        set => SetValue(TopInsetProperty, value);
+    }
+
     private DragHandle _dragging = DragHandle.None;
     private int _dragIndex = -1;
     private INotifyCollectionChanged? _observedCollection;
@@ -35,6 +44,7 @@ public class CurveEditor : Control
     static CurveEditor()
     {
         AffectsRender<CurveEditor>(PointsProperty);
+        AffectsRender<CurveEditor>(TopInsetProperty);
     }
 
     public CurveEditor()
@@ -225,7 +235,7 @@ public class CurveEditor : Control
         var rect = Bounds.Deflate(Padding);
         var size = Math.Min(rect.Width, rect.Height);
         var left = rect.Left + (rect.Width - size) / 2;
-        var top = rect.Top - Padding * 4;
+        var top = rect.Top + TopInset;
         return new Rect(left, top, size, size);
     }
 

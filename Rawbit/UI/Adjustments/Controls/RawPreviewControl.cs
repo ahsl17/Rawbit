@@ -89,9 +89,6 @@ public class RawPreviewControl : Control
 
     public override void Render(DrawingContext context)
     {
-        if (ViewModel?.Export?.IsExporting == true)
-            return;
-
         var container = ViewModel.CurrentContainer;
         if (!ReferenceEquals(_lastContainer, container))
         {
