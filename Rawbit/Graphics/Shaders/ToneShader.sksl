@@ -255,8 +255,7 @@ half4 main(float2 fragCoord) {
     // 2. Exposure: scale scene-linear luminance.
     rgb = applyExposure(rgb, exposure);
 
-    // 3. White / black point: set output clipping range.
-    rgb = applyWhites(rgb, whites);
+    // 3. Black point: lift or crush the shadow floor in scene-linear space.
     rgb = applyBlacks(rgb, blacks);
 
     // 4. Local tone: adjust shadows and highlights independently.
@@ -267,6 +266,11 @@ half4 main(float2 fragCoord) {
     //    Clamp negatives first — the ACES formula is undefined for negative inputs
     //    (white balance can produce negative channel values at extreme settings).
     rgb = aces(max(rgb, vec3(0.0)));
+
+    // 5b. Whites: applied after tone mapping so the slider operates on the final
+    //     [0, 1] output range. Pre-ACES placement caused the effect to be nearly
+    //     invisible because ACES compression would absorb most of the adjustment.
+    rgb = applyWhites(rgb, whites);
 
     // 6. HSL adjustments: applied after tone mapping but BEFORE gamma encoding.
     //    In gamma-encoded space, the Rec.709 luma weights are wrong and hue shifts
