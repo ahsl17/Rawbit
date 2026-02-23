@@ -13,11 +13,11 @@ sealed class Program
             .UsePlatformDetect()
             .With(new Win32PlatformOptions
             {
-                RenderingMode = [Win32RenderingMode.Vulkan]
+                RenderingMode = [Win32RenderingMode.Vulkan, Win32RenderingMode.Wgl, Win32RenderingMode.Software]
             })
             .With(new X11PlatformOptions()
             {
-                RenderingMode = [X11RenderingMode.Vulkan]
+                RenderingMode = [X11RenderingMode.Vulkan, X11RenderingMode.Glx, X11RenderingMode.Software]
             })
             .UseSkia()
             .LogToTrace()

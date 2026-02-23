@@ -159,9 +159,15 @@ internal static class TonePipelineReference
 
     private static void ApplyGamma(ref float r, ref float g, ref float b)
     {
-        r = MathF.Pow(MathF.Max(r, 0f), 1f / 2.2f);
-        g = MathF.Pow(MathF.Max(g, 0f), 1f / 2.2f);
-        b = MathF.Pow(MathF.Max(b, 0f), 1f / 2.2f);
+        r = LinearToSrgbChannel(r);
+        g = LinearToSrgbChannel(g);
+        b = LinearToSrgbChannel(b);
+    }
+
+    private static float LinearToSrgbChannel(float value)
+    {
+        var c = MathF.Max(value, 0f);
+        return c <= 0.0031308f ? c * 12.92f : 1.055f * MathF.Pow(c, 1f / 2.4f) - 0.055f;
     }
 
     private static void ApplyPointCurve(ref float r, ref float g, ref float b, float[] curvePoints, int curvePointCount)

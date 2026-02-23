@@ -35,8 +35,8 @@ vec3 applyExposure(vec3 color, float ev) {
 }
 
 vec3 applyWhiteBalance(vec3 color, float temp, float tintAmount) {
-    vec3 tempMult = vec3(1.0 + temp * 0.35, 1.0 + temp * 0.12, 1.0 - temp * 0.35);
-    vec3 tintMult = vec3(1.0 + tintAmount * 0.15, 1.0 - tintAmount * 0.3, 1.0 + tintAmount * 0.15);
+    vec3 tempMult = vec3(1.0 + temp * 0.35, 1.0, 1.0 - temp * 0.35);
+    vec3 tintMult = vec3(1.0, 1.0 - tintAmount * 0.15, 1.0);
     return color * tempMult * tintMult;
 }
 
@@ -98,8 +98,15 @@ vec3 applyWhites(vec3 color, float amount) {
         return color;
     }
 
-    float whiteLevel = 1.0 - whitesAdj * 0.25;
-    return color / max(whiteLevel, 0.01);
+    float luma = getLuma(max(color, vec3(0.0)));
+    // Only affect the upper highlight range — no effect on midtones or shadows.
+    float mask = smoothstep(0.5, 1.0, luma);
+    if (mask < 1e-3) {
+        return color;
+    }
+
+    vec3 adjusted = color * pow(2.0, whitesAdj * 0.75);
+    return mix(color, adjusted, mask);
 }
 
 vec3 applyBlacks(vec3 color, float amount) {
@@ -114,9 +121,13 @@ vec3 applyBlacks(vec3 color, float amount) {
         return color;
     }
 
-    float adjustment = blacksAdj * 0.75;
-    float factor = pow(2.0, adjustment);
-    vec3 adjusted = color * factor;
+    vec3 adjusted;
+    if (blacksAdj > 0.0) {
+        adjusted = color + vec3(blacksAdj * 0.1);
+    } else {
+        // Crush: multiply to deepen shadows toward pure black.
+        adjusted = color * pow(2.0, blacksAdj * 0.75);
+    }
     return mix(color, adjusted, mask);
 }
 // -----
@@ -216,29 +227,34 @@ vec3 applyPointCurve(vec3 color) {
 
 
 
+float linearToSrgbChannel(float c) {
+    c = max(c, 0.0);
+    return (c <= 0.0031308) ? c * 12.92 : 1.055 * pow(c, 1.0 / 2.4) - 0.055;
+}
+
+vec3 linearToSrgb(vec3 c) {
+    return vec3(linearToSrgbChannel(c.r), linearToSrgbChannel(c.g), linearToSrgbChannel(c.b));
+}
+
 half4 main(float2 fragCoord) {
     vec4 rawColor = inputImage.eval(fragCoord);
     vec3 rgb = rawColor.rgb;
 
-    // Apply sliders
-    rgb = applyExposure(rgb, exposure);
     rgb = applyWhiteBalance(rgb, temperature, tint);
+
+    rgb = applyExposure(rgb, exposure);
+
     rgb = applyWhites(rgb, whites);
     rgb = applyBlacks(rgb, blacks);
     rgb = applyShadows(rgb, shadows);
     rgb = applyHighlights(rgb, highlights);
+
+    rgb = aces(max(rgb, vec3(0.0)));
+
+    rgb = linearToSrgb(rgb);
     
-    // Tone Mapping: This "squeezes" HDR data back into viewable range
-    // This is how you see detail in clouds that would otherwise be lost
-    rgb = aces(rgb);
-
-    // Gamma to display-referred space (curve feels more LR-like here)
-    rgb = pow(max(rgb, 0.0), vec3(1.0 / 2.2));
-
-    // HSL adjustments (per color range)
     rgb = applyHslAdjustments(rgb);
 
-    // Point curve (luma-only, after gamma)
     rgb = clamp(applyPointCurve(rgb), 0.0, 1.0);
 
     return half4(rgb, rawColor.a);

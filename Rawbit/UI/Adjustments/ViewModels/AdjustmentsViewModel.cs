@@ -226,7 +226,9 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
 
     private void ResetAdjustmentTimer()
     {
+        // Cancel then dispose before replacing — CancellationTokenSource implements IDisposable.
         _adjustmentCts?.Cancel();
+        _adjustmentCts?.Dispose();
         _adjustmentCts = new CancellationTokenSource();
         var token = _adjustmentCts.Token;
 
@@ -265,6 +267,7 @@ public partial class AdjustmentsViewModel : ObservableObject, INavigableViewMode
     private void QueueSaveAdjustments()
     {
         _saveCts?.Cancel();
+        _saveCts?.Dispose();
         _saveCts = new CancellationTokenSource();
         var token = _saveCts.Token;
 
