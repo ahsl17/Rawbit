@@ -58,7 +58,10 @@ vec3 applyHslAdjustments(vec3 rgb) {
     float totalHue = 0.0;
     float totalSat = 0.0;
     float totalLum = 0.0;
-    const float width = 30.0;
+    // Width of 30° left dead zones at ~90° (chartreuse), ~210° (cyan-blue), and ~330° (rose).
+    // With 60°, every pair of adjacent centers is within range of at least one of its neighbours,
+    // giving continuous, gap-free coverage across the full hue wheel.
+    const float width = 60.0;
 
     // Avoid unstable hue math for near-neutral colors.
     if (abs(rgb.r - rgb.g) < 0.001 && abs(rgb.g - rgb.b) < 0.001) {

@@ -35,8 +35,11 @@ vec3 applyExposure(vec3 color, float ev) {
 }
 
 vec3 applyWhiteBalance(vec3 color, float temp, float tintAmount) {
-    vec3 tempMult = vec3(1.0 + temp * 0.35, 1.0 + temp * 0.12, 1.0 - temp * 0.35);
-    vec3 tintMult = vec3(1.0 + tintAmount * 0.15, 1.0 - tintAmount * 0.3, 1.0 + tintAmount * 0.15);
+    // Temperature shifts along the R-B axis only.
+    // Tint shifts along the magenta-green axis (green channel only).
+    // Keeping the two axes orthogonal means the sliders don't interfere with each other.
+    vec3 tempMult = vec3(1.0 + temp * 0.35, 1.0, 1.0 - temp * 0.35);
+    vec3 tintMult = vec3(1.0, 1.0 - tintAmount * 0.15, 1.0);
     return color * tempMult * tintMult;
 }
 
@@ -98,8 +101,15 @@ vec3 applyWhites(vec3 color, float amount) {
         return color;
     }
 
-    float whiteLevel = 1.0 - whitesAdj * 0.25;
-    return color / max(whiteLevel, 0.01);
+    float luma = getLuma(max(color, vec3(0.0)));
+    // Only affect the upper highlight range — no effect on midtones or shadows.
+    float mask = smoothstep(0.5, 1.0, luma);
+    if (mask < 1e-3) {
+        return color;
+    }
+
+    vec3 adjusted = color * pow(2.0, whitesAdj * 0.75);
+    return mix(color, adjusted, mask);
 }
 
 vec3 applyBlacks(vec3 color, float amount) {
@@ -114,9 +124,15 @@ vec3 applyBlacks(vec3 color, float amount) {
         return color;
     }
 
-    float adjustment = blacksAdj * 0.75;
-    float factor = pow(2.0, adjustment);
-    vec3 adjusted = color * factor;
+    vec3 adjusted;
+    if (blacksAdj > 0.0) {
+        // Lift: add a pedestal offset to raise the black floor.
+        // Multiplicative gain cannot lift absolute black; only addition can.
+        adjusted = color + vec3(blacksAdj * 0.1);
+    } else {
+        // Crush: multiply to deepen shadows toward pure black.
+        adjusted = color * pow(2.0, blacksAdj * 0.75);
+    }
     return mix(color, adjusted, mask);
 }
 // -----
@@ -216,29 +232,51 @@ vec3 applyPointCurve(vec3 color) {
 
 
 
+// Proper sRGB EOTF per IEC 61966-2-1.
+// pow(1/2.2) is a common but incorrect approximation — it uses the wrong exponent
+// (2.2 vs the standard 2.4) and skips the linear segment for dark values.
+float linearToSrgbChannel(float c) {
+    c = max(c, 0.0);
+    return (c <= 0.0031308) ? c * 12.92 : 1.055 * pow(c, 1.0 / 2.4) - 0.055;
+}
+
+vec3 linearToSrgb(vec3 c) {
+    return vec3(linearToSrgbChannel(c.r), linearToSrgbChannel(c.g), linearToSrgbChannel(c.b));
+}
+
 half4 main(float2 fragCoord) {
     vec4 rawColor = inputImage.eval(fragCoord);
     vec3 rgb = rawColor.rgb;
 
-    // Apply sliders
-    rgb = applyExposure(rgb, exposure);
+    // 1. White balance: must be first, in pure scene-linear space,
+    //    before exposure changes the channel ratios.
     rgb = applyWhiteBalance(rgb, temperature, tint);
+
+    // 2. Exposure: scale scene-linear luminance.
+    rgb = applyExposure(rgb, exposure);
+
+    // 3. White / black point: set output clipping range.
     rgb = applyWhites(rgb, whites);
     rgb = applyBlacks(rgb, blacks);
+
+    // 4. Local tone: adjust shadows and highlights independently.
     rgb = applyShadows(rgb, shadows);
     rgb = applyHighlights(rgb, highlights);
-    
-    // Tone Mapping: This "squeezes" HDR data back into viewable range
-    // This is how you see detail in clouds that would otherwise be lost
-    rgb = aces(rgb);
 
-    // Gamma to display-referred space (curve feels more LR-like here)
-    rgb = pow(max(rgb, 0.0), vec3(1.0 / 2.2));
+    // 5. Tone mapping: compress HDR range into [0, 1].
+    //    Clamp negatives first — the ACES formula is undefined for negative inputs
+    //    (white balance can produce negative channel values at extreme settings).
+    rgb = aces(max(rgb, vec3(0.0)));
 
-    // HSL adjustments (per color range)
+    // 6. HSL adjustments: applied after tone mapping but BEFORE gamma encoding.
+    //    In gamma-encoded space, the Rec.709 luma weights are wrong and hue shifts
+    //    vary with tonal value. Post-ACES, tone-mapped space is far more stable.
     rgb = applyHslAdjustments(rgb);
 
-    // Point curve (luma-only, after gamma)
+    // 7. Encode to display-referred sRGB using the proper piecewise curve.
+    rgb = linearToSrgb(rgb);
+
+    // 8. Point curve: operates in gamma-encoded display space.
     rgb = clamp(applyPointCurve(rgb), 0.0, 1.0);
 
     return half4(rgb, rawColor.a);
