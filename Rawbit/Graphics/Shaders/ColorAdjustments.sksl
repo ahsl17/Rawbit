@@ -69,10 +69,8 @@ vec3 applyHslAdjustments(vec3 rgb) {
     }
 
     // Reduce adjustment influence in low-saturation areas to prevent noisy luminance shifts.
-    // All three channels (hue, sat, lum) use the same mask so the adjustment amount is
-    // consistent across pixels with identical hue — preventing per-pixel speckle in areas
-    // where saturation varies slightly (e.g. due to sensor noise).
     float saturationMask = smoothstep(0.05, 0.20, hsl.y);
+    float luminanceWeight = smoothstep(0.0, 1.0, hsl.y);
 
     for (int i = 0; i < 8; i++) {
         float center = getHslCenter(i);
@@ -80,7 +78,7 @@ vec3 applyHslAdjustments(vec3 rgb) {
         float w = smoothstep(width, 0.0, d);
         vec3 adj = getHslAdjustment(i);
         float hueSatWeight = w * saturationMask;
-        float lumWeight = w * saturationMask;
+        float lumWeight = w * luminanceWeight;
         totalHue += adj.x * hueSatWeight;
         totalSat += adj.y * hueSatWeight;
         totalLum += adj.z * lumWeight;
